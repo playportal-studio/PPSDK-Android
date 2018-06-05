@@ -1,7 +1,9 @@
-package com.dynepic.ppsdk_android;
+package examples;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import com.dynepic.ppsdk_android.R;
 
 public class ExampleMainActivity extends AppCompatActivity {
 
