@@ -65,3 +65,5 @@ freeline_project_description.json
 /build
 /captures
 .externalNativeBuild
+/.idea/caches
+/.idea/codeStyles
