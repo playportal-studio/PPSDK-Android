@@ -42,7 +42,7 @@ playPORTAL <sup>TM</sup> provides a service to app developers for managing users
 
 ---
 ## Configure
-* Be sure to import the playPORTAL SDK.
+* Be sure to import the playPORTAL SDK into your "main" activity. 
 	```
 	import com.dynepic.ppsdk_android.*;
 	```
@@ -60,118 +60,69 @@ playPORTAL <sup>TM</sup> provides a service to app developers for managing users
         ppsdk = PPManager.getInstance(); // playPORTAL is managed as a singleton class
         ppsdk.configure(id, sec, uri, getApplicationContext());
 
-        // other java code here
+        // Run the playPORTAL SDK user auth check. If user isn't logged in, the SDK will present SSO login
+        // and return from that will be to MainActivity
+        if(!ppsdk.isAuthenticated()) {
+			Intent myIntent = new Intent(this, LoginActivity.class);
+            MainActivity.this.startActivity(myIntent);
+        }
+
+
+        // continue with your app's java code here
+        
 	}
 	```
----
-## Login
-* Implement the following function in AppDelegate.m
-	```
-	- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
 
-		[[PPManager sharedInstance] handleOpenURL:url];
-
-		return YES;
-
-	}
-	```
-* Implement the following method and provide a callback to receive a user once the login flow is completed:
-	```
-	[PPManager sharedInstance].PPusersvc.addUserListener = ^(PPUserObject *user, NSError *error){
-		if (error) {
-
-			NSLog(@"%@ error: %@", NSStringFromSelector(_cmd), error);
-
-		} else {
-
-			// When user is returned you can parse keys and values here
-			NSLog(@"handle=%@", user.handle);
-
-		}
-	};
-	```
-* Call the following method to allow a user to log in:
-	```
-	[[PPManager sharedInstance].PPusersvc login];
-	```
----
-## Anonymous Login
-
-* Call the following method to allow a user to log in anonymously:
-	```
-	int age = 12;
-	[[PPManager sharedInstance].PPusersvc loginAnonymously:age];
-	```
 ---
 ## Storage
-* When a user logs in to your app for the first time, we create a PRIVATE storage bucket just for them. This is where you can store app-specific information for that user.
+* When a user logs in to your app, the SDK creates (or opens) a PRIVATE storage bucket just for them. This is secure storage for storing app-specific information for that user.
+Data is returned (on no Error) via a lambda function. See Storage details for more info on reading/writing to storage.
 ```
-[[PPManager sharedInstance].PPdatasvc readBucket:[PPManager sharedInstance].PPuserobj.myDataStorage andKey:(NSString*)@"SOME_KEY" handler:^(NSDictionary* d, NSError* error) {
-      if(error) {
-      	NSLog(@"%@ error: %@", NSStringFromSelector(_cmd), error);
-      } else if (d) {
-					//Get the value from the returned dictionary
-				[[d valueForKey:@"SOME_KEY"]
-      }
-  }];
+	ppsdk.PPdatasvc.readBucket(ppsdk.PPuserobj.myUserObject.getMyDataStorage(), "TestData", (String readKey, String readValue, String readData, String readError) -> {
+		if (readError == null) {
+			Log.d("Testdata read key:", readKey + " value:" + readValue + " data:" + readData);
+		} else {
+    		Log.d("private readBucket Error:", readError);
+		}
+	});
 ```
-* We also create a global PUBLIC storage bucket that all users can write to and read from.
+
+* The SDK also creates a global PUBLIC storage bucket that all users can write to and read from.
 ```
-[[PPManager sharedInstance].PPdatasvc readBucket:[PPManager sharedInstance].PPuserobj.myAppGlobalDataStorage andKey:(NSString*)@"SOME_OTHER_KEY" handler:^(NSDictionary* d, NSError* error) {
-      if(error) {
-          NSLog(@"%@ error: %@", NSStringFromSelector(_cmd), error);
-      } else if (d) {
-				//Get the value from the returned dictionary
-				[[d valueForKey:@"SOME_OTHER_KEY"]
-      }
-  }];
+	ppsdk.PPdatasvc.readBucket(ppsdk.PPuserobj.myUserObject.getMyGlobalDataStorage(), "TestData", (String readKey, String readValue, String readData, String readError) -> {
+		if (readError == null) {
+			Log.d("Testdata read key:", readKey + " value:" + readValue + " data:" + readData);
+		} else {
+    		Log.d("global readBucket Error:", readError);
+		}
+
+	});
 ```
 * Call the following method to write to the user's private storage bucket:
 ```
-[[PPManager sharedInstance].PPdatasvc
-	writeBucket:[PPManager sharedInstance].PPuserobj.myDataStorage
-	andKey:(NSString*)@"SOME_KEY"
-	andValue:(NSString*)@"SOME_VALUE"]
-	push:FALSE
-	handler:^(NSError *error) {
-		if(error) {
-			NSLog(@"%@ error: %@", NSStringFromSelector(_cmd), error);
-		} else {
-			//Bucket was written to successfully
+    ppsdk.PPdatasvc.writeBucket(ppsdk.PPuserobj.myUserObject.getMyDataStorage(), "TestData", gson.toJson(td), false, (String writeKey, String writeValue, String writeData, String writeError) -> {
+		if (writeError != null) {
+			Log.e("Error writing data to global bucket:", writeError);
 		}
-	}
-];
+	});
 ```
 
 * Call the following method to write to the global public storage bucket:
 ```
-[[PPManager sharedInstance].PPdatasvc
-	writeBucket:[PPManager sharedInstance].PPuserobj.myAppGlobalDataStorage
-	andKey:(NSString*)@"SOME_KEY"
-	andValue:(NSString*)@"SOME_VALUE"]
-	push:FALSE
-	handler:^(NSError *error) {
-		if(error) {
-			NSLog(@"%@ error: %@", NSStringFromSelector(_cmd), error);
-		} else {
-			//Bucket was written to successfully
-		}
-	}
-];
+	ppsdk.PPdatasvc.writeBucket(ppsdk.PPuserobj.myUserObject.getMyGlobalDataStorage(), "TestData", gson.toJson(td), false, (String writeKey, String writeValue, String writeData, String writeError) -> {
+    		if (writeError != null) {
+    			Log.e("Error writing data to global bucket:", writeError);
+    		}
+    	});
 ```
 ---
+
+### Storage Details
+
+---
+
+
 ## Friends
 * Call the following method to retrieve a user's friend's list:
 ```
-[[PPManager sharedInstance].PPusersvc getFriendsProfiles:^(NSError *error) {
-        if (error) {
-            NSLog(@"%@ error: %@", NSStringFromSelector(_cmd), error);
-        } else {
-					//Get the user's number of friends
-					[[PPManager sharedInstance].PPfriendsobj getFriendsCount]
-					//Get a particular friend
-					[[PPManager sharedInstance].PPfriendsobj getFriendAtIndex:0];
-					[NSString stringWithFormat:@"%@ %@", [d valueForKey:@"firstName"], [d valueForKey:@"lastName"]];
-        }
-    }];
 ```
