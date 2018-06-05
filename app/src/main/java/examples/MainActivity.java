@@ -5,7 +5,7 @@ import android.os.Bundle;
 
 import com.dynepic.ppsdk_android.R;
 
-public class ExampleMainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

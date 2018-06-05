@@ -9,13 +9,33 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="examples.ExampleMainActivity">
+        <activity android:name="examples.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+
+        <activity
+            android:name="com.dynepic.ppsdk_android.SSOActivity"
+            android:label="playPORTAL SSO"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.dynepic.ppsdk_android.LoginActivity"
+            android:label="SSO Login"/>
+        <activity
+            android:name="com.dynepic.ppsdk_android.LogoutActivity"
+            android:label="Logout"/>
+
+
     </application>
 
 </manifest>
