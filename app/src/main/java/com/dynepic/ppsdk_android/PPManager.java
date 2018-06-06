@@ -38,30 +38,45 @@ import static java.lang.Boolean.TRUE;
 
 public class PPManager {
 
-	public Context androidContext;
+    // Public API for SDK
+	public void readBucket(String bucketName, String key, PPManager.CallbackFunction cb) {
+		PPdatasvc.readBucket(bucketName, key, cb);
+	}
+
+	public void writeBucket(String bucketName, String key, String value, Boolean push, PPManager.CallbackFunction cb) {
+		PPdatasvc.writeBucket(bucketName, key, value, push, cb);
+	}
+
+	public String getPrivateDataStorage() {
+		return PPuserobj.myUserObject.getMyDataStorage();
+	}
+	public String getPublicDataStorage() {
+		return PPuserobj.myUserObject.getMyGlobalDataStorage();
+	}
+
+	public Context androidContext;  // context of parent app for this SDK
+
 
 	private static Boolean refreshInProgress = false;
 
-    public String apiUrlBase =  "https://sandbox.iokids.net";
-	public String apiOauthBase = "https://sandbox.iokids.net/oauth/";
 
+    String apiUrlBase =  "https://sandbox.iokids.net";
+	String apiOauthBase = "https://sandbox.iokids.net/oauth/";
+	String accessToken;
+    String refreshToken;
+    String clientId;
+    String clientSecret;
+    String redirectURI;
+    ZonedDateTime expirationTime;
+    String auth_code;
+	boolean setImAnonymousStatus;
 
-	public String accessToken;
-    public String refreshToken;
-    public String clientId;
-    public String clientSecret;
-    public String redirectURI;
+	// SDK objectd
+    PPUserObject PPuserobj = new PPUserObject();
+    PPUserService PPusersvc = new PPUserService();
+    PPFriendsObject PPfriendsobj = new PPFriendsObject();
+    PPDataService PPdatasvc= new PPDataService();
 
-    private ZonedDateTime expirationTime;
-    private String auth_code;
-	public boolean setImAnonymousStatus;
-
-    public PPUserObject PPuserobj = new PPUserObject();
-    public PPUserService PPusersvc = new PPUserService();
-    public PPFriendsObject PPfriendsobj = new PPFriendsObject();
-    public PPDataService PPdatasvc= new PPDataService();
-
-    public ppsdk.PPuserobj.myUserObject.getMyDataStorage()
 	// PPManager is a singleton
 	private static PPManager ppManager = new PPManager();
 	public static PPManager getInstance( ) { return ppManager; }
