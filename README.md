@@ -1,10 +1,9 @@
-# PPSDK-Android
-
 # <b>playPORTAL Android (Java) SDK</b></br>
-playPORTAL <sup>TM</sup> provides a service to app developers for managing users of all ages and the data associated with the app and the app users, while providing compliance with required COPPA laws and guidelines.
+playPORTAL<sup>TM</sup> provides a service to app developers for managing users of all ages and the data associated with the app and the app users, while providing compliance with required COPPA laws and guidelines. The playPORTAL service is easily accessed via our SDKs, this doc describes the Java SDK for use in Android apps.
 
 
 ## Getting Started
+The playPORTAl service requires setting up your app in the playPORTAL.
 
 * ### <b>Step 1:</b> Create playPORTAL Partner Account
 
