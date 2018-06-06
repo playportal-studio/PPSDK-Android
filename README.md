@@ -37,7 +37,7 @@ The playPORTAl service requires setting up your app in the playPORTAL.
   </br>
 
 * ### <b>Step 5:</b> Install the SDK
-	* Unzip the PPSDK-Android.jar file and drag the folders in to the top level of your Android Studio project.
+	* Add dependency com.dynepic.ppsdk_android-0.0.1 to build.gradle
 
 ---
 ## Configure
