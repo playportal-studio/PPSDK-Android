@@ -61,6 +61,7 @@ public class PPManager {
     public PPFriendsObject PPfriendsobj = new PPFriendsObject();
     public PPDataService PPdatasvc= new PPDataService();
 
+    public ppsdk.PPuserobj.myUserObject.getMyDataStorage()
 	// PPManager is a singleton
 	private static PPManager ppManager = new PPManager();
 	public static PPManager getInstance( ) { return ppManager; }
