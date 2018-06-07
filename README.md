@@ -77,7 +77,7 @@ The playPORTAl service requires setting up your app in the playPORTAL.
 * When a user logs in to your app, the SDK creates (or opens) a PRIVATE storage bucket just for them. This is secure storage for storing app-specific information for that user.
 Data is returned (on no Error) via a lambda function. See Storage details for more info on reading/writing to storage.
 ```
-	ppsdk.PPdatasvc.readBucket(ppsdk.PPuserobj.myUserObject.getMyDataStorage(), "TestData", (String readKey, String readValue, String readData, String readError) -> {
+	ppsdk.readBucket(ppsdk.getPrivateDataStorage(), "TestData", (String readKey, String readValue, String readData, String readError) -> {
 		if (readError == null) {
 			Log.d("Testdata read key:", readKey + " value:" + readValue + " data:" + readData);
 		} else {
@@ -88,7 +88,7 @@ Data is returned (on no Error) via a lambda function. See Storage details for mo
 
 * The SDK also creates a global PUBLIC storage bucket that all users can write to and read from.
 ```
-	ppsdk.PPdatasvc.readBucket(ppsdk.PPuserobj.myUserObject.getMyGlobalDataStorage(), "TestData", (String readKey, String readValue, String readData, String readError) -> {
+	ppsdk.readBucket(ppsdk.getPublicDataStorage(), "TestData", (String readKey, String readValue, String readData, String readError) -> {
 		if (readError == null) {
 			Log.d("Testdata read key:", readKey + " value:" + readValue + " data:" + readData);
 		} else {
@@ -99,7 +99,7 @@ Data is returned (on no Error) via a lambda function. See Storage details for mo
 ```
 * Call the following method to write to the user's private storage bucket:
 ```
-    ppsdk.PPdatasvc.writeBucket(ppsdk.PPuserobj.myUserObject.getMyDataStorage(), "TestData", gson.toJson(td), false, (String writeKey, String writeValue, String writeData, String writeError) -> {
+    ppsdk.writeBucket(ppsdk.getPrivateDataStorage(), "TestData", gson.toJson(td), false, (String writeKey, String writeValue, String writeData, String writeError) -> {
 		if (writeError != null) {
 			Log.e("Error writing data to global bucket:", writeError);
 		}
@@ -108,7 +108,7 @@ Data is returned (on no Error) via a lambda function. See Storage details for mo
 
 * Call the following method to write to the global public storage bucket:
 ```
-	ppsdk.PPdatasvc.writeBucket(ppsdk.PPuserobj.myUserObject.getMyGlobalDataStorage(), "TestData", gson.toJson(td), false, (String writeKey, String writeValue, String writeData, String writeError) -> {
+	ppsdk.writeBucket(ppsdk.getPublicDataStorage(), "TestData", gson.toJson(td), false, (String writeKey, String writeValue, String writeData, String writeError) -> {
     		if (writeError != null) {
     			Log.e("Error writing data to global bucket:", writeError);
     		}
@@ -120,7 +120,22 @@ Data is returned (on no Error) via a lambda function. See Storage details for mo
 
 ---
 
+## Profile
+The user profile is available either via direct access, or by providing a callback.
 
+#### Direct Access
+```
+	PPUserObject u = getProfile();
+	if(u != null) Log.d("username:", u.getValueForKey("username"));	
+```
+
+#### Callback 
+To use a callback, the userListener method (or lambda) must be registered. The example shows using a lambda function:
+```
+	ppsdk.addUserListener((PPUserObject u) -> {
+		Log.d("userListener invoked for user:", u.getValueForKey("username"));
+	});
+```
 ## Friends
 * Call the following method to retrieve a user's friend's list:
 ```

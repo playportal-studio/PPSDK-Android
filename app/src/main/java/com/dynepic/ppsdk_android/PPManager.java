@@ -51,8 +51,8 @@ public class PPManager {
 	public String getPublicDataStorage() {
 		return PPuserobj.myUserObject.getMyGlobalDataStorage();
 	}
-	PPUserObject getProfile(boolean bucketToo) {
-		return PPusersvc.getProfile(bucketToo);
+	PPUserObject getProfile() {
+		return PPusersvc.getProfile(false);
 	}
 
 
