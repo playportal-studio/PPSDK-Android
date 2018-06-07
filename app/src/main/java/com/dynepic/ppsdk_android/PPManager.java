@@ -38,21 +38,23 @@ import static java.lang.Boolean.TRUE;
 
 public class PPManager {
 
-    // Public API for SDK
+    // Public API calls for SDK
 	public void readBucket(String bucketName, String key, PPManager.CallbackFunction cb) {
 		PPdatasvc.readBucket(bucketName, key, cb);
 	}
-
 	public void writeBucket(String bucketName, String key, String value, Boolean push, PPManager.CallbackFunction cb) {
 		PPdatasvc.writeBucket(bucketName, key, value, push, cb);
 	}
-
 	public String getPrivateDataStorage() {
 		return PPuserobj.myUserObject.getMyDataStorage();
 	}
 	public String getPublicDataStorage() {
 		return PPuserobj.myUserObject.getMyGlobalDataStorage();
 	}
+	PPUserObject getProfile(boolean bucketToo) {
+		return PPusersvc.getProfile(bucketToo);
+	}
+
 
 	public Context androidContext;  // context of parent app for this SDK
 
