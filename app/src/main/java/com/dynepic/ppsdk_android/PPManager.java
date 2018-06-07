@@ -97,9 +97,11 @@ public class PPManager {
 		Call<Tokens> getTokens(@QueryMap Map<String, String> queryparms);
 	}
 
-    private void userListener(PPUserObject u)
-    {
-    }
+	// Allow app to register a callback, which is invoked on user profile updates
+	UserListenerFunction userListenerFnx;
+	public interface UserListenerFunction { public void uf(PPUserObject u);  }
+	public void addUserListener(UserListenerFunction u) { Log.d("adding userListener: ", u.toString()); userListenerFnx = u; }
+    private void userListener(PPUserObject u) { if(userListenerFnx != null) userListenerFnx.uf(u); };
 
 	public interface BucketCallbackFunction {
 		public boolean f(String bucketName, List<String> bucketUsers, boolean bucketIsPublic, String error);
@@ -112,7 +114,6 @@ public class PPManager {
 
     public void configure(String id, String sec, String redir, Context context)
     {
-
 		Log.d("context:", context.toString());
 		sharedPrefs = context.getSharedPreferences("ppsdk-preferences", Context.MODE_PRIVATE);
 		androidContext = context;
