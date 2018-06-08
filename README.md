@@ -123,13 +123,13 @@ Data is returned (on no Error) via a lambda function. See Storage details for mo
 ## Profile
 The user profile is available either via direct access, or by providing a callback.
 
-#### Direct Access
+##### Profile via direct access
 ```
 	PPUserObject u = getProfile();
 	if(u != null) Log.d("username:", u.getValueForKey("username"));	
 ```
 
-#### Callback 
+##### Profile via callback 
 To use a callback, the userListener method (or lambda) must be registered. The example shows using a lambda function:
 ```
 	ppsdk.addUserListener((PPUserObject u) -> {
