@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.dynepic.ppsdk_android.models.User;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -64,6 +65,13 @@ public class PPUserObject {
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	public void inflateFriendsListFromArray(ArrayList<User> users) throws IllegalAccessException {
+		Log.d("inflating friends list...", "");
+		for (User u: users) {
+			Log.d("friend:", u.getHandle());
 		}
 	}
 
