@@ -51,14 +51,12 @@ public class PPUserService {
 					ppsdk.setUserPreferences(); // stash into nvram
 
 					if (openBuckets) {
-						List<String> bucketUsers = new ArrayList<>();
+						ArrayList<String> bucketUsers = new ArrayList<>();
 						bucketUsers.add(user.getUserId());
 
-//						ppsdk.PPdatasvc.createBucket(user.getMyDataStorage(), bucketUsers, false, (String bucketName, String key, HashMap<String, String> data, String error) -> {
 						ppsdk.PPdatasvc.createBucket(user.getMyDataStorage(), bucketUsers, false, (String bucketName, String key, String data, String error) -> {
 							if (error == null) {
 								Log.d("getProfileAndBucket:", "opened user data bucket");
-//								ppsdk.PPdatasvc.createBucket(user.getMyGlobalDataStorage(), bucketUsers, true, (String bucketName2, String key2, HashMap<String, String> data2, String error2) -> {
 								ppsdk.PPdatasvc.createBucket(user.getMyGlobalDataStorage(), bucketUsers, true, (String bucketName2, String key2, String data2, String error2) -> {
 									if (error2 == null) {
 										Log.d("getProfileAndBucket:", "opened global data bucket");
@@ -79,10 +77,47 @@ public class PPUserService {
 		return ppsdk.PPuserobj;
 	}
 
+	public void getFriendsProfiles(PPManager.UserProfileCallbackFunction cb)
+	{
+		PPManager ppsdk = PPManager.getInstance();
+		String btoken = "Bearer " + ppsdk.accessToken;
+		Call<ArrayList<User>> call = getApi().getFriends(btoken);
+		Log.d("getFriends: ", "no parms");
 
-	public ArrayList<Map<String, String>> getFriendsProfiles() {
-		return null;
+		call.enqueue(new Callback<ArrayList<User>>() {
+			@Override
+			public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
+				int statusCode = response.code();
+
+				Log.d("status: ", String.valueOf(statusCode));
+				if (statusCode == 200) {
+					ArrayList<User> friends = response.body();
+					Log.d("getFriends: user:", friends.toString());
+					try {
+						Log.d("calling inflate friends from array:", "");
+						ppsdk.PPuserobj.inflateFriendsListFromArray(friends);
+					} catch (IllegalAccessException e) {
+						e.printStackTrace();
+					}
+					Log.d("getFriends response: ", String.valueOf(response.body()));
+					cb.f(friends);
+				} else {
+					cb.f(null);
+				}
+			}
+
+			@Override
+			public void onFailure(Call<ArrayList<User>> call, Throwable t) {
+				Log.e("getFriendsProfiles error:", "failed with " + t);
+				Log.e("getFriendsProfiles call:",  call.toString());
+			}
+		});
 	}
+
+
+
+
+
 
 	public String getMyId() {
 		if (userDictionary != null) {
