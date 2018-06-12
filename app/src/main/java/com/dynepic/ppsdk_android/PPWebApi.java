@@ -7,8 +7,11 @@ import com.dynepic.ppsdk_android.models.User;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.ArrayList;
 import java.util.Map;
 
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -30,6 +33,11 @@ public class PPWebApi {
 		PPManager ppsdk = PPManager.getInstance();
 
 		if (sPPWebApiInterface == null) {
+			HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+			interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+			OkHttpClient client = new OkHttpClient.Builder()
+					.addInterceptor(interceptor).build();
+
 			Gson gson = new GsonBuilder()
 					.setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
 					.create();
@@ -59,9 +67,15 @@ public class PPWebApi {
 		@GET("user/v1/my/profile/cover")
 		Call<Image> downloadCoverImage(@Header("Authorization") String authorization);
 
+
+		// Friends API calls
+		@GET("user/v1/my/friends")
+		Call<ArrayList<User>> getFriends(@Header("Authorization") String authorization);
+
+
 		// Data / Buckets API calls
 		@PUT("/app/v1/bucket")
-		Call<Bucket> putData(@Body Map<String, String> bodyparms, @Header("Authorization") String authorization);
+		Call<Bucket> putData(@Body Bucket bucketconfig, @Header("Authorization") String authorization);
 
 		@GET("/app/v1/bucket")
 		Call<Bucket> readData(@QueryMap Map<String, String> queryparms, @Header("Authorization") String authorization);
