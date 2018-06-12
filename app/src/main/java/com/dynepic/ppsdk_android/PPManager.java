@@ -68,7 +68,8 @@ public class PPManager {
 	String apiOauthBase = "https://sandbox.iokids.net/oauth/";
 	String accessToken;
     String refreshToken;
-    String clientId;
+	String nvClientId;
+	String clientId;
     String clientSecret;
     String redirectURI;
     ZonedDateTime expirationTime;
@@ -306,6 +307,7 @@ public class PPManager {
 			date.plusHours(1);
 		}
 		expirationTime = date;
+		nvClientId = clientId;
 		setAuthPreferences();
     }
 
@@ -316,6 +318,7 @@ public class PPManager {
 			Log.d("allTokensExist:", "true");
 			return true;
 		} else {
+			invalidateUserPreferences();
 			Log.d("allTokensExist:", "false");
 			return false;
 		}
@@ -344,19 +347,33 @@ public class PPManager {
     {
         if(allTokensExist()) {
             if(tokensNotExpired()) {
-				Log.d("isAuthenticated:", "true");
-                return true;
+				if(clientId.equals(nvClientId)) {
+					Log.d("isAuthenticated:", "true");
+					return true;
+				} else {
+					Log.d("isAuthenticated:", "false - wrong app id");
+					invalidateUserPreferences();
+					return false;
+				}
             } else {
                 if(refreshAccessToken()) {
-					Log.d("isAuthenticated:", "true");
-                    return true;
-                } else {
+					if(clientId.equals(nvClientId)) {
+						Log.d("isAuthenticated:", "true");
+						return true;
+					} else {
+						Log.d("isAuthenticated:", "false - wrong app id");
+						invalidateUserPreferences();
+						return false;
+					}
+				} else {
 					Log.d("isAuthenticated:", "false");
+					invalidateUserPreferences();
 					return false;
                 }
             }
         }
 		Log.d("isAuthenticated:", "false");
+		invalidateUserPreferences();
 		return false;
     }
 
@@ -365,6 +382,7 @@ public class PPManager {
 		accessToken = null;
 		refreshToken = null;
 		setAuthPreferences();
+		invalidateUserPreferences();
     }
 
 	public void AnonymousLogin() {
@@ -372,7 +390,7 @@ public class PPManager {
 
 	public String getPicassoParms()
 	{
-		return "https://sandbox.iokids.net/user/v1/my/profile/picture";
+		return apiUrlBase + "/user/v1/my/profile/picture";
 	}
 
 	private static class BasicAuthInterceptor implements Interceptor {
@@ -441,12 +459,14 @@ public class PPManager {
 
 
 	private void getAuthPreferences() {
+		nvClientId = sharedPrefs.getString("clientId", "unknown");
 		accessToken = sharedPrefs.getString("accessToken", "unknown");
 		refreshToken = sharedPrefs.getString("refreshToken", "unknown");
 		String defaultDateTime = stringFromDateTime(ZonedDateTime.now().minusHours(1));
 		Log.d("defaultDateTime:", defaultDateTime);
 		expirationTime = dateTimeFromString(sharedPrefs.getString("expirationTime", defaultDateTime));
 
+		Log.d("getAuthPreferences id:", nvClientId);
 		Log.d("getAuthPreferences at:", accessToken );
 		Log.d("getAuthPreferences rt:", refreshToken );
 		Log.d("getAuthPreferences et:", expirationTime.toString());
@@ -454,28 +474,38 @@ public class PPManager {
 
 	private void setAuthPreferences() {
 		SharedPreferences.Editor editor = sharedPrefs.edit();
+		editor.putString("clientId", nvClientId);
 		editor.putString("accessToken", accessToken);
 		editor.putString("refreshToken", refreshToken);
 		editor.putString("expirationTime", stringFromDateTime(expirationTime));
 		editor.commit();
 
-		Log.d("setAuthPreferences at:", accessToken);
-		Log.d("setAuthPreferences rt:", refreshToken);
+		Log.d("setAuthPreferences id:", nvClientId);
+		Log.d("setAuthPreferences at:", accessToken != null? accessToken : "invalid accessToken");
+		Log.d("setAuthPreferences rt:", refreshToken  != null? accessToken : "invalid refreshToken");
 		Log.d("setAuthPreferences et:", expirationTime.toString());
 	}
 	private void getUserPreferences() {
-		String id = sharedPrefs.getString("userId", "unknown");
+		String id = sharedPrefs.getString("newUserId", "unknown");
 		String handle = sharedPrefs.getString("handle", "unknown");
 		PPuserobj.initWithUserPreferences(id, handle);
 		Log.d("getUserPreferences userId:", PPuserobj.myUserObject.getUserId());
 		Log.d("getUserPreferences handle:", PPuserobj.myUserObject.getHandle());
 	}
 
+	public void invalidateUserPreferences() {
+		Log.d("invalidating UserPreferences :", "");
+		SharedPreferences.Editor editor = sharedPrefs.edit();
+		editor.putString("newUserId", "unknown");
+		editor.putString("handle", "unknown");
+		editor.commit();
+	}
+
 	public void setUserPreferences() {
 		SharedPreferences.Editor editor = sharedPrefs.edit();
 		String id = PPuserobj.myUserObject.getUserId();
 		String handle = PPuserobj.myUserObject.getHandle();
-		editor.putString("userId", id);
+		editor.putString("newUserId", id);
 		editor.putString("handle", handle);
 		editor.commit();
 
