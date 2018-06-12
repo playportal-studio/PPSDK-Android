@@ -44,6 +44,7 @@ public class PPWebApi {
 			Retrofit retrofit = new Retrofit.Builder()
 					.baseUrl(ppsdk.apiUrlBase)
 					.addConverterFactory(GsonConverterFactory.create(gson))
+					.client(client)
 					.build();
 
 			sPPWebApiInterface = retrofit.create(PPWebApiInterface.class);
