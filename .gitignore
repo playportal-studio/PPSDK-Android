@@ -74,3 +74,10 @@ freeline_project_description.json
 .externalNativeBuild
 /.idea/caches
 /.idea/codeStyles
+/app/src/main/res/drawable/ic_info_black_24dp.xml
+/app/src/main/res/drawable/ic_notifications_black_24dp.xml
+/app/src/main/res/drawable/ic_home_black_24dp.xml
+/app/src/main/res/drawable/ic_profile_black_24dp.xml
+/app/src/main/res/drawable/ic_dashboard_black_24dp.xml
+/app/src/main/res/drawable/ic_sync_black_24dp.xml
+/app/src/main/res/drawable/ppbutton.xml
