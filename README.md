@@ -45,6 +45,7 @@ The playPORTAl service requires setting up your app in the playPORTAL.
 	```
 	import com.dynepic.ppsdk_android.*;
 	```
+* In your resource folder /res change the App name string to appropriate name for your app
 * Copy your clientID, clientSecret & redirectURI from the playPORTAL website into your app
 * In your app init, call the SDK configure (e.g. from your apps MainActivity.m):
 	```
@@ -117,7 +118,10 @@ Data is returned (on no Error) via a lambda function. See Storage details for mo
 ---
 
 ### Storage Details
-
+Information stored in playPORTAL storage is opaque to the playPORTAL system. This has multiple implications:
+1. The SDK user is responsible for defining the JSON of the stored elements
+2. The playPORTAL system doesn't perform any conversions on the presented JSON elements, so the user's Java objects that are sent/received to/from the playPORTAL SDK must be passed through a gson (or Jackson) parser, i.e. can be converted to JSON. This can be done (using gson as shown gson.toJson(javaObject)). Failures will result in exceptions or data integrity issues.
+3. Data objects can be stored retrieved at any granularity suitable to the user's application. Specifically, an individual element (e.g. KV pair, <string, string>) can be stored/retrieved. Similarly, more complex Java objects can be stored/retrieved. In order to facilitate data operations, we recommend using a converter, such as http://www.jsonschema2pojo.org/ to simplify the process of defining the marshalling/unmarshalling methods. 
 ---
 
 ## Profile
@@ -137,6 +141,7 @@ To use a callback, the userListener method (or lambda) must be registered. The e
 	});
 ```
 ## Friends
-* Call the following method to retrieve a user's friend's list:
+* A user's friends can be retrieved using the following method:
 ```
+    ppsdk.getFriendsProfiles(
 ```
