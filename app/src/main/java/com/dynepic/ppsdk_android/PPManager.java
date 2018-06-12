@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.dynepic.ppsdk_android.models.Tokens;
+import com.dynepic.ppsdk_android.models.User;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.squareup.picasso.OkHttp3Downloader;
@@ -15,6 +16,7 @@ import java.time.DateTimeException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,10 +109,12 @@ public class PPManager {
 		public boolean f(String bucketName, List<String> bucketUsers, boolean bucketIsPublic, String error);
 	}
 	public interface CallbackFunction {
-//		public void f(String bucketName, String key, HashMap<String, String>data, String error) throws DataFormatException;
 		public void fse(String bucketName, String key, String data, String error);
 	}
 
+	public interface UserProfileCallbackFunction {
+		public void f(ArrayList<User> friends);
+	}
 
     public void configure(String id, String sec, String redir, Context context)
     {
