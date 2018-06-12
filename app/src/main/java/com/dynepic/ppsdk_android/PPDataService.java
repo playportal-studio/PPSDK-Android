@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.dynepic.ppsdk_android.models.Bucket;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,47 +18,30 @@ import static com.dynepic.ppsdk_android.PPWebApi.getApi;
 public class PPDataService {
 
 
-    public void createBucket(String bucketName, List<String> bucketUsers, Boolean isPublic, PPManager.CallbackFunction cb)
+	public void createBucket(String bucketName, ArrayList<String> bucketUsers, Boolean isPublic, PPManager.CallbackFunction cb)
 	{
 		if(bucketName != null) {
 			Log.d("bucket create name: ", bucketName);
-
 			PPManager ppsdk = PPManager.getInstance();
 			String btoken = "Bearer " + ppsdk.accessToken;
+			Bucket bucketconfig = new Bucket();
+			bucketconfig.setPublic(isPublic);
+			bucketconfig.setId(bucketName);
+			bucketconfig.setUsers(bucketUsers);
+			bucketconfig.setData(new HashMap<>());
+			Call<Bucket> call = getApi().putData(bucketconfig, btoken);
 
-			Map<String, String> body = new HashMap<>();
-			body.put("public", isPublic.toString());
-			body.put("id", bucketName);
-			String usrstr;
-			String datastr;
-			if (isPublic) {
-				usrstr = "[]";
-				body.put("users", usrstr);
-			} else {
-				usrstr = "[" + bucketUsers.get(0) + "]";
-				body.put("users", usrstr);
-//				datastr = "{id:" + ppsdk.PPuserobj.myUserObject.getUserId() + "}";
-			}
-			datastr = "{}";
-			body.put("data", datastr);
-			Log.d("body parms: ", body.toString());
-
-			Call<Bucket> call = getApi().putData(body, btoken);
 			call.enqueue(new Callback<Bucket>() {
 				@Override
 				public void onResponse(Call<Bucket> call, Response<Bucket> response) {
 					int statusCode = response.code();
-					Log.d("createBucket status: ", String.valueOf(statusCode));
-					Log.d("raw response:", response.raw().toString());
-
 					if((statusCode == 200) || (statusCode == 409)) {
 						Bucket bucket = response.body();
 						Log.d("createBucket res: ", String.valueOf(response.body()));
 						cb.fse(bucketName, null, null, null);
 					} else if(statusCode == 401) {
-						Log.d("createBucket 401", " refresh access token and try again");
 						if(ppsdk.refreshAccessToken()) { 	// retry operation
-							Call<Bucket> retryCall = getApi().putData(body, btoken);
+							Call<Bucket> retryCall = getApi().putData(bucketconfig, btoken);
 							retryCall.enqueue(new Callback<Bucket>() {
 								@Override
 								public void onResponse(Call<Bucket> retryCall, Response<Bucket> response) {
