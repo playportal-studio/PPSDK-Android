@@ -52,12 +52,13 @@ public class PPUserService {
 
 					if (openBuckets) {
 						ArrayList<String> bucketUsers = new ArrayList<>();
+						ArrayList<String> emptyBucketUsers = new ArrayList<>();
 						bucketUsers.add(user.getUserId());
 
 						ppsdk.PPdatasvc.createBucket(user.getMyDataStorage(), bucketUsers, false, (String bucketName, String key, String data, String error) -> {
 							if (error == null) {
 								Log.d("getProfileAndBucket:", "opened user data bucket");
-								ppsdk.PPdatasvc.createBucket(user.getMyGlobalDataStorage(), bucketUsers, true, (String bucketName2, String key2, String data2, String error2) -> {
+								ppsdk.PPdatasvc.createBucket(user.getMyGlobalDataStorage(), emptyBucketUsers, true, (String bucketName2, String key2, String data2, String error2) -> {
 									if (error2 == null) {
 										Log.d("getProfileAndBucket:", "opened global data bucket");
 									}
