@@ -27,14 +27,7 @@ public class Bucket {
 
 	@SerializedName("data")
 	@Expose
-//	private BucketData data;
 	private HashMap<String, String> data=null;
-//	private String data=null;
-
-//	@SerializedName("jsonData")
-//	@Expose
-//	private String jsonData=null;
-
 
 	@SerializedName("id")
 	@Expose
@@ -55,15 +48,8 @@ public class Bucket {
 		this.createdDate = createdDate;
 	}
 
-	//	public BucketData getData() {		return data;	}
-//	public void setData(BucketData data) {		this.data = data;	}
     public HashMap<String, String> getData() {		return data;	}
 	public void setData(HashMap<String, String> data) {		this.data = data;	}
-
-//	public String getJsonData() { return jsonData; }
-//public String getJsonData() { return data; }
-//	public void setJsonData(String data) { this.jsonData = data; }
-//public void setJsonData(String data) { this.data = data; }
 
 	public String getId() {		return id;	}
 	public void setId(String id) {		this.id = id;	}
