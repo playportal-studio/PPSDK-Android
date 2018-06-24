@@ -13,6 +13,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.dynepic.ppsdk_android.PPManager;
 import com.dynepic.ppsdk_android.R;
 import com.dynepic.ppsdk_android.utils._DialogFragments;
 
@@ -86,7 +87,9 @@ public class ssoLoginFragment extends DialogFragment {
                     @Override
                     @SuppressWarnings("deprecation")//IT'S NOT DEPRECATED.
                     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                        view.loadUrl(url);
+                        //ToDo: test this method
+                        PPManager.handleOpenURL(url);
+                        //view.loadUrl(url);
                         return true;
                     }
 
