@@ -19,7 +19,6 @@ import com.dynepic.ppsdk_android.utils._DialogFragments;
 
 import java.lang.reflect.Method;
 
-//ToDo: delete this template class along with corresponding xml layout before final push to production
 
 public class ssoLoginFragment extends DialogFragment {
 
@@ -101,6 +100,7 @@ public class ssoLoginFragment extends DialogFragment {
                 }
         );
 
+        //ToDo: Are we sandboxing all users?
         String pre = "https://sandbox.iokids.net/oauth/signin?client_id=";
         String cid = clientId;
         String mid = "&redirect_uri=";
