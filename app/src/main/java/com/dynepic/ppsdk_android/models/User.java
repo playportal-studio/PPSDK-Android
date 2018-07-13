@@ -1,14 +1,11 @@
 package com.dynepic.ppsdk_android.models;
 
-import android.util.Log;
+import android.content.Context;
 
-import com.dynepic.ppsdk_android.PPManager;
-import com.dynepic.ppsdk_android.R;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.lang.reflect.Field;
-import java.util.Map;
 
 public class User {
 
@@ -49,14 +46,14 @@ public class User {
 	private String myGlobalDataStorage;
 
 
-	public void inflateWith(Map<String, String> dictionary) {  // only needed on marshalling data from secure storage (automatically done on API call)
-		if (dictionary != null) {
-			Log.d("inflateWith User ", "");
-			for ( String key : dictionary.keySet() ) {
-				System.out.println( key );
-			}
-		}
-	}
+//	public void populateUserData(Map<String, String> dictionary) {  // only needed on marshalling data from secure storage (automatically done on API call)
+//		if (dictionary != null) {
+//			Log.d("populateUserData User ", "");
+//			for ( String key : dictionary.keySet() ) {
+//				System.out.println( key );
+//			}
+//		}
+//	}
 
 	public String getAccountType() {
 		return accountType;
@@ -92,6 +89,7 @@ public class User {
 	public void setFirstName(String firstName) {
 		this.firstName = firstName;
 	}
+
 	public String getLastName() {
 		return lastName;
 	}
@@ -117,25 +115,25 @@ public class User {
 	public void setUserType(String userType) {		this.userType = userType;	}
 
 	public String getMyDataStorage() {
-		PPManager ppsdk = PPManager.getInstance();
 		if(handle != null) {
-			String name = ppsdk.androidContext.getResources().getString(R.string.app_name);
+			String name = "";//TODO: UNIQUE ID
+			//ppsdk.androidContext.getResources().getString(R.string.app_name);
 			return(handle + "@" + name);
 		} else {
 			return " ";
 		}
 	}
-	public String getMyGlobalDataStorage() {
-		PPManager ppsdk = PPManager.getInstance();
+	public String getMyGlobalDataStorage(Context CONTEXT) {
+		//PPManager ppsdk = new PPManager(CONTEXT);
 		if (handle != null) {
-			String name = ppsdk.androidContext.getResources().getString(R.string.app_name);
-			return("globalAppData" + "@" + ppsdk.androidContext.getResources().getString(R.string.app_name));
+			String name = "";//ppsdk.androidContext.getResources().getString(R.string.app_name);
+			return("globalAppData" + "@" );//TODO: UNIQUE ID //+ ppsdk.androidContext.getResources().getString(R.string.app_name));
 		} else {
 			return "unknown";
 		}
 	}
-
-
+//
+//
 	public String getValueForKey(String key) throws IllegalAccessException {
 		for (Field field : this.getClass().getDeclaredFields()) {
 			field.setAccessible(true); // You might want to set modifier to public first.

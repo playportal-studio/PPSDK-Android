@@ -13,7 +13,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.dynepic.ppsdk_android.R;
+import com.dynepic.ppsdk.ppsdk_demoapp.R;
 import com.dynepic.ppsdk_android.utils._DialogFragments;
 
 import java.lang.reflect.Method;

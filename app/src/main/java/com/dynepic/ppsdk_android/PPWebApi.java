@@ -1,5 +1,6 @@
 package com.dynepic.ppsdk_android;
 
+import android.content.Context;
 import android.media.Image;
 
 import com.dynepic.ppsdk_android.models.Bucket;
@@ -26,11 +27,12 @@ import retrofit2.http.QueryMap;
 
 public class PPWebApi {
 
+	//
 
 	private static PPWebApiInterface sPPWebApiInterface;
 
-	public static PPWebApiInterface getApi() {
-		PPManager ppsdk = PPManager.getInstance();
+	public static PPWebApiInterface getApi(Context CONTEXT) {
+		//PPManager ppsdk = new PPManager(CONTEXT);
 
 		if (sPPWebApiInterface == null) {
 			HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
@@ -42,7 +44,7 @@ public class PPWebApi {
 					.setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
 					.create();
 			Retrofit retrofit = new Retrofit.Builder()
-					.baseUrl(ppsdk.apiUrlBase)
+					.baseUrl("https://sandbox.iokids.net")
 					.addConverterFactory(GsonConverterFactory.create(gson))
 					.client(client)
 					.build();

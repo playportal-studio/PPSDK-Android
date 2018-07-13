@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.dynepic.ppsdk_android.R;
+import com.dynepic.ppsdk.ppsdk_demoapp.R;
 
 
 //ToDo: delete this template class along with corresponding xml layout before final push to production

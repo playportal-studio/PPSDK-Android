@@ -6,12 +6,13 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.support.annotation.IntDef;
 
-import com.dynepic.ppsdk_android.R;
+import com.dynepic.ppsdk.ppsdk_demoapp.R;
 
 
 /**
  * This class is for controlling fragments and fragment transitions.
  * Pulled from Github(github.com/preslm) and modified here for particular usage.
+ * These methods only handle fragments that have existing containers within the current activity.
 
  =========
  = Usage =
@@ -37,7 +38,7 @@ public class _Fragments extends Fragment {
             CLOSE, OPEN,
             FADE, NONE})
 
-    public @interface Style {}
+    @interface Style {}
 
     public static final int
             SLIDE_FROM_RIGHT =0,

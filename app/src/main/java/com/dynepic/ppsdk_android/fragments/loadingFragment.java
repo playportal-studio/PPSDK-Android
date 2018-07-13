@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
-import com.dynepic.ppsdk_android.R;
+import com.dynepic.ppsdk.ppsdk_demoapp.R;
 
 
 /**

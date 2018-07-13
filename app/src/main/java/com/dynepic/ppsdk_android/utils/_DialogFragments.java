@@ -41,9 +41,10 @@ public class _DialogFragments extends DialogFragment {
     }
 
     //Shows a dialog fragment on top of everything else, without clearing base fragments
-    public static void showDialogFragmentNoClear(Activity ACTIVITY_CONTEXT, DialogFragment dialogFragment, Boolean cancelable){
+    public static void showDialogFragmentNoClear(Activity ACTIVITY_CONTEXT, DialogFragment dialogFragment, Boolean cancelable) {
         FragmentTransaction transaction = ACTIVITY_CONTEXT.getFragmentManager().beginTransaction();
         dialogFragment.setCancelable(cancelable);
         dialogFragment.show(transaction, "dialog");
     }
+
 }

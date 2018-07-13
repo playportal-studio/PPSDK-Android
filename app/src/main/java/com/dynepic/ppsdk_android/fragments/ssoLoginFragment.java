@@ -4,7 +4,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,21 +18,27 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.dynepic.ppsdk_android.PPManager;
-import com.dynepic.ppsdk_android.R;
+import com.dynepic.ppsdk.ppsdk_demoapp.R;
+import com.dynepic.ppsdk_android.PPUserObject;
+import com.dynepic.ppsdk_android.PPUserService;
+import com.dynepic.ppsdk_android.utils._DevPrefs;
 import com.dynepic.ppsdk_android.utils._DialogFragments;
 
 import java.lang.reflect.Method;
 
 
+//TODO: THIS NEEDS TO BE MADE PACKAGE PRIVATE
 public class ssoLoginFragment extends DialogFragment {
 
     private Context CONTEXT;
     private Activity ACTIVITY_CONTEXT;
     private loadingFragment loadingFragment;
-    private String redirectURI, clientId;
+    private Intent NEXT_INTENT;
 
-    public ssoLoginFragment() {
+    public ssoLoginFragment() {}
+
+    public void setNextActivity(Intent intent){
+        NEXT_INTENT = intent;
     }
 
     @Override
@@ -36,13 +47,13 @@ public class ssoLoginFragment extends DialogFragment {
         CONTEXT = getActivity();
         ACTIVITY_CONTEXT = getActivity();
         setStyle(STYLE_NO_TITLE, 0);
-
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         View view = inflater.inflate(R.layout.basic_webview_layout, container, false);
+        getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         //ToDo: load up your interface here
         //EXAMPLE:
@@ -84,37 +95,57 @@ public class ssoLoginFragment extends DialogFragment {
         webView.setWebViewClient(
                 new WebViewClient() {
                     @Override
-                    @SuppressWarnings("deprecation")//IT'S NOT DEPRECATED.
                     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                        //ToDo: test this method
-                        PPManager.handleOpenURL(url);
+                        grabAccessToken(url, CONTEXT);
                         //view.loadUrl(url);
                         return true;
                     }
 
                     @Override
                     public void onPageFinished(WebView view, final String url) {
-                        //Stop your loading here
                         loadingFragment.dismiss();
                     }
                 }
         );
 
-        //ToDo: Are we sandboxing all users?
+        _DevPrefs devPrefs = new _DevPrefs(CONTEXT);
         String pre = "https://sandbox.iokids.net/oauth/signin?client_id=";
-        String cid = clientId;
+        String cid = devPrefs.getClientId();
         String mid = "&redirect_uri=";
-        String uri = redirectURI;
+        String uri = devPrefs.getClientRedirect();
         String post = "&state=beans&response_type=implicit";
 
         String url = pre + cid + mid + uri + post;
-
         webView.loadUrl(url);
     }
 
-    public void setLoginCredentials(String Client_ID, String Redirect_URL){
-        this.clientId = Client_ID;
-        this.redirectURI = Redirect_URL;
+
+    public void grabAccessToken(String url, Context CONTEXT) {
+
+        Uri uri = Uri.parse(url);
+        String accessToken = uri.getQueryParameter("access_token");
+        _DevPrefs devPrefs = new _DevPrefs(CONTEXT);
+        devPrefs.setClientAccessToken(accessToken);
+
+        System.out.println("URL = "+uri);
+
+        PPUserObject obj = PPUserService.getUser(CONTEXT);
+        System.out.println("USER OBJ = "+obj);
+
+        if(!accessToken.equals("")){
+            Log.i("ssoLoginFragment", "AccessToken : "+accessToken);
+            try{
+                CONTEXT.startActivity(NEXT_INTENT);
+                ACTIVITY_CONTEXT.finish();
+                this.dismiss();
+            }catch (Exception e){
+                e.printStackTrace();
+                Log.e(" SSO_LOGIN_ERR","Did you specify an intent for your next activity?");
+                Log.e(" SSO_LOGIN_ERR","Error in class: "+ACTIVITY_CONTEXT.getLocalClassName());
+                Log.e(" SSO_LOGIN_ERR","Intent is: "+NEXT_INTENT);
+            }
+        }
+
     }
 
 }
