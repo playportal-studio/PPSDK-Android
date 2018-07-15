@@ -23,7 +23,6 @@ import android.app.FragmentTransaction;
  *
  */
 
-//ToDo: merge with _Fragments class?
 
 public class _DialogFragments extends DialogFragment {
 

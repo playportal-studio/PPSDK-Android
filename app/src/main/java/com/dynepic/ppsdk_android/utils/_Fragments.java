@@ -6,7 +6,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.support.annotation.IntDef;
 
-import com.dynepic.ppsdk.ppsdk_demoapp.R;
+import com.dynepic.ppsdk_android.R;
 
 
 /**

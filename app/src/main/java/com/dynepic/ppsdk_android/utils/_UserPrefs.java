@@ -11,10 +11,19 @@ public class _UserPrefs {
     private SharedPreferences _sharedPrefs;
 
     //User _Base
-    private String USER_NAME = "USER_NAME";
-    private String USER_DETAILS_1 = "USER_DETAILS_1";
-    private String USER_DETAILS_2 = "USER_DETAILS_2";
-    private String USER_DETAILS_3 = "USER_DETAILS_3";
+    private String
+            userName = "userName",
+            accountType = "userName",
+            country = "country",
+            coverPhoto = "coverPhoto",
+            firstName = "firstName",
+            handle = "handle",
+            lastName = "lastName",
+            profilePic = "profilePic",
+            userId = "userId",
+            userType = "userType",
+            myDataStorage = "myDataStorage",
+            myGlobalDataStorage = "myGlobalDataStorage";
 
 
     @SuppressLint("CommitPrefEdits") //IDE thinks it's not making a commit() or apply()...
@@ -24,26 +33,104 @@ public class _UserPrefs {
     }
 
     public String getUserName() {
-        return _sharedPrefs.getString(USER_NAME, "");
+        return _sharedPrefs.getString(userName, "");
     }
     public void setUserName(String value) {
-        _prefsEditor.putString(USER_NAME, value);
+        _prefsEditor.putString(userName, value);
         _prefsEditor.apply();
     }
 
-
-    public String getUserDetails1() {
-        return _sharedPrefs.getString(USER_DETAILS_1, "");
+    public String getAccountType() {
+        return _sharedPrefs.getString(accountType, "");
     }
-    public void setUserDetails1(String value) {
-        _prefsEditor.putString(USER_DETAILS_1, value);
+    public void setAccountType(String value) {
+        _prefsEditor.putString(accountType, value);
         _prefsEditor.apply();
     }
 
+    public String getCountry() {
+        return _sharedPrefs.getString(country, "");
+    }
+    public void setCountry(String value) {
+        _prefsEditor.putString(country, value);
+        _prefsEditor.apply();
+    }
+
+    public String getCoverPhoto() {
+        return _sharedPrefs.getString(coverPhoto, "");
+    }
+    public void setCoverPhoto(String value) {
+        _prefsEditor.putString(coverPhoto, value);
+        _prefsEditor.apply();
+    }
+
+    public String getFirstName() {
+        return _sharedPrefs.getString(firstName, "");
+    }
+    public void setFirstName(String value) {
+        _prefsEditor.putString(firstName, value);
+        _prefsEditor.apply();
+    }
+
+    public String getHandle() {
+        return _sharedPrefs.getString(handle, "");
+    }
+    public void setHandle(String value) {
+        _prefsEditor.putString(handle, value);
+        _prefsEditor.apply();
+    }
+
+    public String getLastName() {
+        return _sharedPrefs.getString(lastName, "");
+    }
+    public void setLastName(String value) {
+        _prefsEditor.putString(lastName, value);
+        _prefsEditor.apply();
+    }
+
+    public String getProfilePic() {
+        return _sharedPrefs.getString(profilePic, "");
+    }
+    public void setProfilePic(String value) {
+        _prefsEditor.putString(profilePic, value);
+        _prefsEditor.apply();
+    }
+
+    public String getUserId() {
+        return _sharedPrefs.getString(userId, "");
+    }
+    public void setUserId(String value) {
+        _prefsEditor.putString(userId, value);
+        _prefsEditor.apply();
+    }
+
+    public String getUserType() {
+        return _sharedPrefs.getString(userType, "");
+    }
+    public void setUserType(String value) {
+        _prefsEditor.putString(userType, value);
+        _prefsEditor.apply();
+    }
+
+    public String getMyDataStorage() {
+        return _sharedPrefs.getString(myDataStorage, "");
+    }
+    public void setMyDataStorage(String value) {
+        _prefsEditor.putString(myDataStorage, value);
+        _prefsEditor.apply();
+    }
+
+    public String getMyGlobalDataStorage() {
+        return _sharedPrefs.getString(myGlobalDataStorage, "");
+    }
+    public void setMyGlobalDataStorage(String value) {
+        _prefsEditor.putString(myGlobalDataStorage, value);
+        _prefsEditor.apply();
+    }
 
     public boolean exists(){
-        String USER = _sharedPrefs.getString(USER_NAME, "");
-        String DETAILS = _sharedPrefs.getString(USER_DETAILS_1, "");
+        String USER = _sharedPrefs.getString(handle, "");
+        String DETAILS = _sharedPrefs.getString(userId, "");
         return !USER.isEmpty() || !USER.equalsIgnoreCase("") || !DETAILS.isEmpty() || !DETAILS.equalsIgnoreCase("");
     }
 
