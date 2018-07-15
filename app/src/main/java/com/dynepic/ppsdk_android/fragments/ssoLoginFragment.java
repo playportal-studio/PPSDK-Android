@@ -64,7 +64,7 @@ public class ssoLoginFragment extends DialogFragment {
         View view = inflater.inflate(R.layout.sso_login_view, container, false);
         Objects.requireNonNull(getDialog().getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         loadingFragment = new loadingFragment();
-        _DialogFragments.showDialogFragmentNoClear(ACTIVITY_CONTEXT, loadingFragment, false);
+        _DialogFragments.showDialogFragmentNoClear(ACTIVITY_CONTEXT, loadingFragment, true);
         loadWebView(view);
 
         return view;
@@ -134,7 +134,6 @@ public class ssoLoginFragment extends DialogFragment {
         userHandler = new UserHandler(CONTEXT);
 
         updateUserFromWeb(this);
-
     }
 
     public void updateUserFromWeb(ssoLoginFragment ssoLoginFragment) {
@@ -142,6 +141,8 @@ public class ssoLoginFragment extends DialogFragment {
         _DevPrefs settings = new _DevPrefs(CONTEXT);
         String btoken = "Bearer " + settings.getClientAccessToken();
         Log.i("SSO_LOGIN", "Requesting User Data");
+
+        //region Call User Data
         Call<User> call = getApi(CONTEXT).getUser(btoken);
         call.enqueue(new Callback<User>() {
             @Override
@@ -178,6 +179,7 @@ public class ssoLoginFragment extends DialogFragment {
                 Log.e("SSO_LOGIN_ERR", "Request failed with throwable: " + t);
             }
         });
-    }
+        //endregion
 
+    }
 }

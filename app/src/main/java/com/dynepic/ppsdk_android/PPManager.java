@@ -6,9 +6,16 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.dynepic.ppsdk_android.fragments.ssoLoginFragment;
+import com.dynepic.ppsdk_android.models.User;
+import com.dynepic.ppsdk_android.utils._AsyncCall;
 import com.dynepic.ppsdk_android.utils._DevPrefs;
 import com.dynepic.ppsdk_android.utils._DialogFragments;
 import com.dynepic.ppsdk_android.utils._UserPrefs;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -250,6 +257,38 @@ public class PPManager {
 
 	}
 	//endregion
+
+	public FriendsManager getFriendsManager(){
+		return new FriendsManager();
+	}
+
+	public class FriendsManager implements _AsyncCall.AsyncFriendsResponse{
+
+	    private ArrayList<String> FriendData=null;
+
+		public void updateFriends(){
+			_AsyncCall.getFriendsRequest friendsRequest = new _AsyncCall.getFriendsRequest(CONTEXT);
+			friendsRequest.delegate = this;
+			friendsRequest.execute((Void) null);
+		}
+
+		@Override
+		public void onFriendsResponse(ArrayList<String> output) {
+			Log.i("onFriendsResponse","Friend Data Obtained - Value:\n"+output);
+			FriendData = output;
+			userPrefs.setFriendData(output);
+		}
+
+		public ArrayList<String> getFriendData(){
+			if(userPrefs.getFriendData()!=null){
+				return userPrefs.getFriendData();
+			}
+		    else{
+				return FriendData;
+			}
+        }
+
+	}
 
 	public void showSSOLogin(Intent intent){
 		Log.d("PPManager.showSSOLogin","Launching playPORTAL SSO...");

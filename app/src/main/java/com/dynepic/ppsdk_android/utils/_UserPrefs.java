@@ -3,6 +3,14 @@ package com.dynepic.ppsdk_android.utils;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+
+import com.dynepic.ppsdk_android.models.User;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class _UserPrefs {
 
@@ -23,7 +31,8 @@ public class _UserPrefs {
             userId = "userId",
             userType = "userType",
             myDataStorage = "myDataStorage",
-            myGlobalDataStorage = "myGlobalDataStorage";
+            myGlobalDataStorage = "myGlobalDataStorage",
+            friends = "friends";
 
 
     @SuppressLint("CommitPrefEdits") //IDE thinks it's not making a commit() or apply()...
@@ -125,6 +134,21 @@ public class _UserPrefs {
     }
     public void setMyGlobalDataStorage(String value) {
         _prefsEditor.putString(myGlobalDataStorage, value);
+        _prefsEditor.apply();
+    }
+
+    public ArrayList<String> getFriendData(){
+        Set<String> set = _sharedPrefs.getStringSet(friends, null);
+        if (set!=null){//prevents it from blowing up
+            return new ArrayList<>(set);
+        } else{
+            return null;
+        }
+    }
+    public void setFriendData(ArrayList<String> FriendData){
+        Set<String> set = new HashSet<String>();
+        set.addAll(FriendData);
+        _prefsEditor.putStringSet(friends, set);
         _prefsEditor.apply();
     }
 

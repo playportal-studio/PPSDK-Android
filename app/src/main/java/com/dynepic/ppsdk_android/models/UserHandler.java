@@ -1,8 +1,21 @@
 package com.dynepic.ppsdk_android.models;
 
+import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 
+import com.dynepic.ppsdk_android.fragments.loadingFragment;
+import com.dynepic.ppsdk_android.utils._DevPrefs;
+import com.dynepic.ppsdk_android.utils._DialogFragments;
 import com.dynepic.ppsdk_android.utils._UserPrefs;
+
+import java.util.ArrayList;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
 
 public class UserHandler {
 
@@ -12,6 +25,7 @@ public class UserHandler {
 
 	public UserHandler(Context context){
 		CONTEXT = context;
+		setUserPrefs(CONTEXT);
 	}
 
 	public void populateUserData(User userObject){
@@ -121,6 +135,8 @@ public class UserHandler {
 	public void setMyGlobalDataStorage(String myGlobalDataStorage) {
 		userPrefs.setMyGlobalDataStorage(myGlobalDataStorage);
 	}
+
+
 	//endregion
 
 	public String toString(){
