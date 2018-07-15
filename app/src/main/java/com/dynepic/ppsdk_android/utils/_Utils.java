@@ -2,6 +2,7 @@ package com.dynepic.ppsdk_android.utils;
 
 import android.support.design.widget.Snackbar;
 import android.view.View;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

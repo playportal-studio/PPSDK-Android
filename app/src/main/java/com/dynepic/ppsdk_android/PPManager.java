@@ -156,6 +156,10 @@ public class PPManager {
 
 	public class UserData{
 
+		public Boolean hasUser(){
+			return userPrefs.exists();
+		}
+
 		public String getAccountType() {
 			return userPrefs.getAccountType();
 		}

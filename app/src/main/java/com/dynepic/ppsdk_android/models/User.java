@@ -3,7 +3,6 @@ package com.dynepic.ppsdk_android.models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-
 public class User {
 
 	@SerializedName("accountType")

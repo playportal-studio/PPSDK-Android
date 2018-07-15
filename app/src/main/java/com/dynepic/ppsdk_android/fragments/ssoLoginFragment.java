@@ -3,7 +3,6 @@ package com.dynepic.ppsdk_android.fragments;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;

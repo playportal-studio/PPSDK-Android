@@ -1,16 +1,8 @@
 package com.dynepic.ppsdk_android.models;
 
 import android.content.Context;
-import android.util.Log;
 
-import com.dynepic.ppsdk_android.utils._DevPrefs;
 import com.dynepic.ppsdk_android.utils._UserPrefs;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
-import static com.dynepic.ppsdk_android.utils.PPWebApi.getApi;
 
 public class UserHandler {
 
