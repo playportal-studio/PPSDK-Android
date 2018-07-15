@@ -32,7 +32,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.dynepic.ppsdk_android.utils.PPWebApi.getApi;
+import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
 
 
 public class ssoLoginFragment extends DialogFragment {
