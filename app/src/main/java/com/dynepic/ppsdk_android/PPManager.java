@@ -3,19 +3,23 @@ package com.dynepic.ppsdk_android;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.dynepic.ppsdk_android.fragments.ssoLoginFragment;
 import com.dynepic.ppsdk_android.models.User;
-import com.dynepic.ppsdk_android.utils._AsyncCall;
 import com.dynepic.ppsdk_android.utils._DevPrefs;
 import com.dynepic.ppsdk_android.utils._DialogFragments;
 import com.dynepic.ppsdk_android.utils._UserPrefs;
 
-import java.lang.reflect.Array;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
 
 
 /**
@@ -28,9 +32,9 @@ import java.util.Set;
  * Get User
  * Set User
 
- =========
- = Usage =
- =========
+ ===============
+ = Basic Usage =
+ ===============
 
  * Initialize your activity's context. Content cannot be referenced from static context.
  * Requires CONTEXT and ACTIVITY_CONTEXT
@@ -76,6 +80,30 @@ import java.util.Set;
 
  ppManager.getUserData().getValue();
  ppManager.getUserData().setValue();
+
+
+
+ ===================
+ = Friends Request =
+ ===================
+
+ * In your controlling activity or class, you need to specify "implements"
+
+ public class YOUR_CLASS_NAME implements PPManager.FriendsService.onFriendsResponse {}
+
+ * Create request, specify activity, delegate, execute request
+
+ PPManager.FriendsService.getFriends friendsRequest = new PPManager.FriendsService.getFriends(ACTIVITY);
+ friendsRequest.delegate = this;
+ friendsRequest.execute((Void) null);
+
+ * Create @Override method to get results after the Async Call has been completed
+ * Returns an ArrayList of Strings of user Handles
+
+ /@Override
+ public void onFriendsResponse(ArrayList<String> output) {
+    //update your UI based on response
+ }
 
  *
  */
@@ -255,38 +283,78 @@ public class PPManager {
 			userPrefs.setMyGlobalDataStorage(myGlobalDataStorage);
 		}
 
-	}
-	//endregion
-
-	public FriendsManager getFriendsManager(){
-		return new FriendsManager();
-	}
-
-	public class FriendsManager implements _AsyncCall.AsyncFriendsResponse{
-
-	    private ArrayList<String> FriendData=null;
-
-		public void updateFriends(){
-			_AsyncCall.getFriendsRequest friendsRequest = new _AsyncCall.getFriendsRequest(CONTEXT);
-			friendsRequest.delegate = this;
-			friendsRequest.execute((Void) null);
-		}
-
-		@Override
-		public void onFriendsResponse(ArrayList<String> output) {
-			Log.i("onFriendsResponse","Friend Data Obtained - Value:\n"+output);
-			FriendData = output;
-			userPrefs.setFriendData(output);
-		}
-
-		public ArrayList<String> getFriendData(){
+		public ArrayList<String> getStoredFriendData(){
 			if(userPrefs.getFriendData()!=null){
 				return userPrefs.getFriendData();
 			}
-		    else{
-				return FriendData;
+			else{
+				return new ArrayList<>();
 			}
-        }
+		}
+
+	}
+	//endregion
+
+	public FriendsService getFriendsManager(){
+		return new FriendsService();
+	}
+
+	public static class FriendsService {
+
+		public interface FriendsResponse {
+			void onFriendsResponse(ArrayList<String> output);
+		}
+
+		public static class getFriends extends AsyncTask<Void, Void, ArrayList<String>> {
+
+			public FriendsResponse delegate;
+			private ArrayList<User> friendsList;
+			private ArrayList<String> allFriendsHandles;
+			private final WeakReference<Activity> weakActivity;
+
+			public getFriends(Activity activity){
+				weakActivity = new WeakReference<>(activity);;
+			}
+
+			@Override
+			protected ArrayList<String> doInBackground(Void... params) {
+				_DevPrefs devPrefs = new _DevPrefs(weakActivity.get());
+				allFriendsHandles = new ArrayList<>();
+				Call<ArrayList<User>> friendsCall = getApi(weakActivity.get()).getFriends(devPrefs.getClientAccessToken());
+				friendsCall.enqueue(new Callback<ArrayList<User>>() {
+					@Override
+					public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
+						if (response.code() == 200) {
+							System.out.println(response.body());
+							friendsList = response.body();
+							for (int i=0;i>=friendsList.size(); i++){
+								allFriendsHandles.add(friendsList.get(i).getHandle());
+							}
+						}
+						else{
+							Log.e(" GET_FRIENDS_ERR","Error getting friends data.");
+							Log.e(" GET_FRIENDS_ERR","Response code is : "+response.code());
+							Log.e(" GET_FRIENDS_ERR","Response message is : "+response.message());
+						}
+					}
+
+					@Override
+					public void onFailure(Call<ArrayList<User>> call, Throwable t) {
+						Log.e("GET_FRIENDS_ERR", "Request failed with throwable: " + t);
+					}
+				});
+				return allFriendsHandles;
+			}
+
+			@Override
+			protected void onPostExecute(final ArrayList<String> result) {
+				delegate.onFriendsResponse(result);
+			}
+
+			@Override
+			protected void onCancelled() {
+			}
+		}
 
 	}
 
