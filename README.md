@@ -37,111 +37,61 @@ The playPORTAl service requires setting up your app in the playPORTAL.
   </br>
 
 * ### <b>Step 5:</b> Install the SDK
-	* Add dependency com.dynepic.ppsdk_android-0.0.1 to build.gradle
 
----
-## Configure
-* Be sure to import the playPORTAL SDK into your "main" activity. 
-	```
-	import com.dynepic.ppsdk_android.*;
-	```
-* In your resource folder /res change the App name string to appropriate name for your app
-* Copy your clientID, clientSecret & redirectURI from the playPORTAL website into your app
-* In your app init, call the SDK configure (e.g. from your apps MainActivity.m):
-	```
-    public class MainActivity extends AppCompatActivity {
+    * Add dependency ------- to your app level build.gradle
 
-        // The next 3 strings are taken from your "app" definition in the playPORTAL web.
-        String id = "iok-cid-444ad028be7e16c1157962992ccd35e33823d6728a33d8fa";
-        String sec = "iok-cse-93714e707231284f4d30de950c5d6580434c0b7ae6e7d7f5";
-        String uri = "yourapp://redirect";
-	      
-        PPManager ppsdk;
-        ppsdk = PPManager.getInstance(); // playPORTAL is managed as a singleton class
-        ppsdk.configure(id, sec, uri, getApplicationContext());
+# Using the playPORTAL Manager
 
-        // Run the playPORTAL SDK user auth check. If user isn't logged in, the SDK will present SSO login
-        // and return from that will be to MainActivity
-        if(!ppsdk.isAuthenticated()) {
-			Intent myIntent = new Intent(this, LoginActivity.class);
-            MainActivity.this.startActivity(myIntent);
-        }
+## Setup:
 
 
-        // continue with your app's java code here
-        
-	}
-	```
+### * Initialize the manager, and specify context:
 
----
-## Storage
-* When a user logs in to your app, the SDK creates (or opens) a PRIVATE storage bucket just for them. This is secure storage for storing app-specific information for that user.
-Data is returned (on no Error) via a lambda function. See Storage details for more info on reading/writing to storage.
-```
-	ppsdk.readBucket(ppsdk.getPrivateDataStorage(), "TestData", (String readKey, String readValue, String readData, String readError) -> {
-		if (readError == null) {
-			Log.d("Testdata read key:", readKey + " value:" + readValue + " data:" + readData);
-		} else {
-    		Log.d("private readBucket Error:", readError);
-		}
-	});
+You need to specify the context of the activity you are in. PPManager methods cannot be referenced from static context. Any usage of the PPManager requires context. After initializing and configuring the manager, everything else is mostly straight forward.
+
+```java
+Activity ACTIVITY_CONTEXT = this;
+Context CONTEXT = this;
+PPManager ppManager = new PPManager(CONTEXT, ACTIVITY_CONTEXT);
 ```
 
-* The SDK also creates a global PUBLIC storage bucket that all users can write to and read from.
-```
-	ppsdk.readBucket(ppsdk.getPublicDataStorage(), "TestData", (String readKey, String readValue, String readData, String readError) -> {
-		if (readError == null) {
-			Log.d("Testdata read key:", readKey + " value:" + readValue + " data:" + readData);
-		} else {
-    		Log.d("global readBucket Error:", readError);
-		}
+### Set your Configuration parameters
 
-	});
-```
-* Call the following method to write to the user's private storage bucket:
-```
-    ppsdk.writeBucket(ppsdk.getPrivateDataStorage(), "TestData", gson.toJson(td), false, (String writeKey, String writeValue, String writeData, String writeError) -> {
-		if (writeError != null) {
-			Log.e("Error writing data to global bucket:", writeError);
-		}
-	});
+Obtain your client KEY, SECRET, and REDIRECT URL from when you setup the playPORTAL developer account. If you need to check to see if the PPManager has been initialized, you can check using the isConfigured() method.
+
+Example:
+```java
+if (ppManager.isConfigured()){
+	//Implement your activity transaction here
+}
+else{
+    ppManager.configure("UNIQUE_KEY_STRING","UNIQUE_SECRET_STRING","unique://redirect/string");
+}
 ```
 
-* Call the following method to write to the global public storage bucket:
-```
-	ppsdk.writeBucket(ppsdk.getPublicDataStorage(), "TestData", gson.toJson(td), false, (String writeKey, String writeValue, String writeData, String writeError) -> {
-    		if (writeError != null) {
-    			Log.e("Error writing data to global bucket:", writeError);
-    		}
-    	});
-```
----
 
-### Storage Details
-Information stored in playPORTAL storage is opaque to the playPORTAL system. This has multiple implications:
-1. The SDK user is responsible for defining the JSON of the stored elements
-2. The playPORTAL system doesn't perform any conversions on the presented JSON elements, so the user's Java objects that are sent/received to/from the playPORTAL SDK must be passed through a gson (or Jackson) parser, i.e. can be converted to JSON. This can be done (using gson as shown gson.toJson(javaObject)). Failures will result in exceptions or data integrity issues.
-3. Data objects can be stored retrieved at any granularity suitable to the user's application. Specifically, an individual element (e.g. KV pair, <string, string>) can be stored/retrieved. Similarly, more complex Java objects can be stored/retrieved. In order to facilitate data operations, we recommend using a converter, such as http://www.jsonschema2pojo.org/ to simplify the process of defining the marshalling/unmarshalling methods. 
----
+## Using the SSO Login:
 
-## Profile
-The user profile is available either via direct access, or by providing a callback.
+This method requires an intent for where you intend to send the user after login. It is called from the PPManager using showSSOLogin().
 
-##### Profile via direct access
-```
-	PPUserObject u = getProfile();
-	if(u != null) Log.d("username:", u.getValueForKey("username"));	
+Example:
+```java
+Intent intent = new Intent(CONTEXT, yourActivity.class);
+ppManager.showSSOLogin(intent);
 ```
 
-##### Profile via callback 
-To use a callback, the userListener method (or lambda) must be registered. The example shows using a lambda function:
+
+## Getting Basic User Data:
+
+A full list of methods to use are available on the wiki HERE.
+
+Examples:
+```java
+String userHandle = ppManager.getUserData().getHandle();
 ```
-	ppsdk.addUserListener((PPUserObject u) -> {
-		Log.d("userListener invoked for user:", u.getValueForKey("username"));
-	});
-```
-## Friends
-* A user's friends can be retrieved using the following method:
-```
-    ppsdk.getFriendsProfiles(
+OR (if you create a UserData variable)
+```java
+UserData userdata = ppManager.getUserData();
+String userHandle = userData.getHandle();
+String userName = userData.getName();
 ```
