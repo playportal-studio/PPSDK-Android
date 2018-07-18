@@ -27,58 +27,7 @@ android {
     }
 }
 
-def siteUrl = 'https://github.com/Dynepic/PPSDK-Android'
-def gitUrl = 'https://github.com/Dynepic/PPSDK-Android.git'
 
-
-bintray {
-    user = bintrayUser
-    key = bintrayApiKey
-
-    configurations = ['archives'] //When uploading configuration files
-    pkg {
-        repo = 'android'
-        name = project.name
-        desc = 'playPORTAL SDK for Android'
-        websiteUrl = siteUrl
-        issueTrackerUrl = ''
-        vcsUrl = gitUrl
-        licenses = ['Apache-2.0']
-        labels = ['aar', 'android']
-        publicDownloadNumbers = true
-    }
-}
-
-install {
-    repositories.mavenInstaller {
-        pom {
-            project {
-                packaging 'aar'
-                name 'playPORTAL Android SDK'
-                url siteUrl
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-                developers {
-                    developer {
-                        id 'eprice'
-                        name 'Ethan Price'
-                        email 'eprice@netrist.com'
-                    }
-                }
-                scm {
-                    connection 'https://github.com/Dynepic/PPSDK-Android.git'
-                    developerConnection 'hhttps://github.com/Dynepic/PPSDK-Android.git'
-                    url siteUrl
-
-                }
-            }
-        }
-    }
-}
 
 
 dependencies {
@@ -99,25 +48,87 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
 
-//task sourcesJar(type: Jar) {
-//    from android.sourceSets.main.java.srcDirs
-//    classifier = 'sources'
-//}
-//
-//task javadoc(type: Javadoc) {
-//    source = android.sourceSets.main.java.srcDirs
-//    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-//}
-//
-//task javadocJar(type: Jar, dependsOn: javadoc) {
-//    classifier = 'javadoc'
-//    from javadoc.destinationDir
-//}
-//artifacts {
-//    archives javadocJar
-//    archives sourcesJar
-//}
-//
-//task findConventions << {
-//    println project.getConvention()
-//}
+apply plugin: 'com.github.dcendents.android-maven'
+
+group = publishedGroupId                               // Maven Group ID for the artifact
+
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            project {
+                packaging 'aar'
+                groupId publishedGroupId
+                artifactId artifact
+
+                // Add your description here
+                name libraryName
+                description libraryDescription
+
+                developers {
+                    developer {
+                        id developerId
+                        name developerName
+                        email developerEmail
+                    }
+                }
+                scm {
+                    connection 'https://github.com/Dynepic/PPSDK-Android.git'
+                    developerConnection 'https://github.com/Dynepic/PPSDK-Android.git'
+                    url 'https://github.com/Dynepic/PPSDK-Android.git'
+                }
+            }
+        }
+    }
+}
+
+version = libraryVersion
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+task findConventions << {
+    println project.getConvention()
+}
+
+// Bintray
+Properties properties = new Properties()
+properties.load(project.rootProject.file('gradle.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+
+    configurations = ['archives']
+    pkg {
+        repo = bintrayRepo
+        name = bintrayName
+        desc = libraryDescription
+        publish = true
+        publicDownloadNumbers = true
+        version {
+            desc = libraryDescription
+            // Optional. The passphrase for GPG signing'
+            // gpg {
+            //    sign = true //Determines whether to GPG sign the files. The default is false
+            //    passphrase = properties.getProperty("bintray.gpg.password")
+            //}
+        }
+    }
+}
