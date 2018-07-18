@@ -1,4 +1,9 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+group = 'com.dynepic.ppsdk_android'
+version = '1.0'
 
 android {
     compileSdkVersion 27
@@ -22,6 +27,59 @@ android {
     }
 }
 
+def siteUrl = 'https://github.com/Dynepic/PPSDK-Android'
+def gitUrl = 'https://github.com/Dynepic/PPSDK-Android.git'
+
+
+bintray {
+    user = bintrayUser
+    key = bintrayApiKey
+
+    configurations = ['archives'] //When uploading configuration files
+    pkg {
+        repo = 'android'
+        name = project.name
+        desc = 'playPORTAL SDK for Android'
+        websiteUrl = siteUrl
+        issueTrackerUrl = ''
+        vcsUrl = gitUrl
+        licenses = ['Apache-2.0']
+        labels = ['aar', 'android']
+        publicDownloadNumbers = true
+    }
+}
+
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                packaging 'aar'
+                name 'playPORTAL Android SDK'
+                url siteUrl
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'eprice'
+                        name 'Ethan Price'
+                        email 'eprice@netrist.com'
+                    }
+                }
+                scm {
+                    connection 'https://github.com/Dynepic/PPSDK-Android.git'
+                    developerConnection 'hhttps://github.com/Dynepic/PPSDK-Android.git'
+                    url siteUrl
+
+                }
+            }
+        }
+    }
+}
+
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -39,4 +97,27 @@ dependencies {
         testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+task findConventions << {
+    println project.getConvention()
 }
