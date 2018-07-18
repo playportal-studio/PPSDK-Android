@@ -35,25 +35,4 @@ allprojects {
     }
 }
 
-ext {
-    // Where you will see your artifact in Bintray's web interface
-    // The "bintrayName" should match the name of the Bintray repo.
-    bintrayRepo = 'maven'
-    bintrayName = 'PPSDK_Android'
-
-    // Maven metadata
-    publishedGroupId = 'com.dynepic.ppsdk_android'
-    libraryName = 'ppsdk_android'
-    // Save yourself a head ache, and set this equal to the name of the Android Studio library
-    // module. The artifact name needs to match the name of the library.
-    artifact = 'ppsdk_android'
-
-    libraryDescription = 'playPORTAL SDK for Android'
-    libraryVersion = '0.0.1'
-
-    developerId = 'presadb'
-    developerName = 'Ethan Price'
-    developerEmail = 'eprice@netrist.com'
-
-    //implemented with: compile '(publishedGroupId):(artifact):(libraryVersion)'
-}
+apply from: 'app/publish.gradle'
