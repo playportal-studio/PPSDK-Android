@@ -15,6 +15,7 @@ import com.dynepic.ppsdk_android.utils._UserPrefs;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
+import okhttp3.Interceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -299,37 +300,27 @@ public class PPManager {
 		return new FriendsService();
 	}
 
-	public static class FriendsService {
+	public class FriendsService {
 
-		public interface FriendsResponse {
-			void onFriendsResponse(ArrayList<String> output);
+		FriendsService(){
+
 		}
 
-		public static class getFriends extends AsyncTask<Void, Void, ArrayList<String>> {
-
-			public FriendsResponse delegate;
-			private ArrayList<User> friendsList;
-			private ArrayList<String> allFriendsHandles;
-			private final WeakReference<Activity> weakActivity;
-
-			public getFriends(Activity activity){
-				weakActivity = new WeakReference<>(activity);;
-			}
-
-			@Override
-			protected ArrayList<String> doInBackground(Void... params) {
-				_DevPrefs devPrefs = new _DevPrefs(weakActivity.get());
-				allFriendsHandles = new ArrayList<>();
-				Call<ArrayList<User>> friendsCall = getApi(weakActivity.get()).getFriends(devPrefs.getClientAccessToken());
+		public void getFriendsData(Interceptor interceptor){
+            Log.d(" GET_FRIENDS","========================1");
+			Call<ArrayList<User>> friendsCall = getApi(interceptor).getFriends(devPrefs.getClientAccessToken());
+            Log.d(" GET_FRIENDS","========================2");
 				friendsCall.enqueue(new Callback<ArrayList<User>>() {
 					@Override
 					public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
+                        Log.d(" GET_FRIENDS","========================4");
 						if (response.code() == 200) {
+                            Log.d(" GET_FRIENDS","========================5");
 							System.out.println(response.body());
-							friendsList = response.body();
-							for (int i=0;i>=friendsList.size(); i++){
-								allFriendsHandles.add(friendsList.get(i).getHandle());
-							}
+//							friendsList = response.body();
+//							for (int i=0;i>=friendsList.size(); i++){
+//								allFriendsHandles.add(friendsList.get(i).getHandle());
+//							}
 						}
 						else{
 							Log.e(" GET_FRIENDS_ERR","Error getting friends data.");
@@ -343,18 +334,62 @@ public class PPManager {
 						Log.e("GET_FRIENDS_ERR", "Request failed with throwable: " + t);
 					}
 				});
-				return allFriendsHandles;
-			}
-
-			@Override
-			protected void onPostExecute(final ArrayList<String> result) {
-				delegate.onFriendsResponse(result);
-			}
-
-			@Override
-			protected void onCancelled() {
-			}
 		}
+
+//		public interface FriendsResponse {
+//			void onFriendsResponse(ArrayList<String> output);
+//		}
+//
+//		public static class getFriends extends AsyncTask<Void, Void, ArrayList<String>> {
+//
+//			public FriendsResponse delegate;
+//			private ArrayList<User> friendsList;
+//			private ArrayList<String> allFriendsHandles;
+//			private final WeakReference<Activity> weakActivity;
+//
+//			public getFriends(Activity activity){
+//				weakActivity = new WeakReference<>(activity);;
+//			}
+//
+//			@Override
+//			protected ArrayList<String> doInBackground(Void... params) {
+//				_DevPrefs devPrefs = new _DevPrefs(weakActivity.get());
+//				allFriendsHandles = new ArrayList<>();
+//				Call<ArrayList<User>> friendsCall = getApi(weakActivity.get()).getFriends(devPrefs.getClientAccessToken());
+//				friendsCall.enqueue(new Callback<ArrayList<User>>() {
+//					@Override
+//					public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
+//						if (response.code() == 200) {
+//							System.out.println(response.body());
+//							friendsList = response.body();
+//							for (int i=0;i>=friendsList.size(); i++){
+//								allFriendsHandles.add(friendsList.get(i).getHandle());
+//							}
+//						}
+//						else{
+//							Log.e(" GET_FRIENDS_ERR","Error getting friends data.");
+//							Log.e(" GET_FRIENDS_ERR","Response code is : "+response.code());
+//							Log.e(" GET_FRIENDS_ERR","Response message is : "+response.message());
+//						}
+//					}
+//
+//					@Override
+//					public void onFailure(Call<ArrayList<User>> call, Throwable t) {
+//						Log.e("GET_FRIENDS_ERR", "Request failed with throwable: " + t);
+//					}
+//				});
+//				return allFriendsHandles;
+//			}
+//
+//			@Override
+//			protected void onPostExecute(final ArrayList<String> result) {
+//				delegate.onFriendsResponse(result);
+//			}
+//
+//			@Override
+//			protected void onCancelled() {
+//			}
+//		}
 
 	}
 

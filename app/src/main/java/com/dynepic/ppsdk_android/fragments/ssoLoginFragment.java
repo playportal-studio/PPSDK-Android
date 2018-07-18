@@ -28,6 +28,7 @@ import com.dynepic.ppsdk_android.utils._DialogFragments;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -143,7 +144,8 @@ public class ssoLoginFragment extends DialogFragment {
         Log.i("SSO_LOGIN", "Requesting User Data");
 
         //region Call User Data
-        Call<User> call = getApi(CONTEXT).getUser(btoken);
+        HttpLoggingInterceptor inc = new HttpLoggingInterceptor();
+        Call<User> call = getApi(inc).getUser(btoken);
         call.enqueue(new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
@@ -167,9 +169,12 @@ public class ssoLoginFragment extends DialogFragment {
 
                     }
                 }else{
+                    //Dialogs.ShowDialog(LoginError())
+                    //Dialogs.ShowDialog(SecurityError())
                     Log.e(" SSO_LOGIN_ERR","Error getting user data.");
                     Log.e(" SSO_LOGIN_ERR","Response code is : "+response.code());
                     Log.e(" SSO_LOGIN_ERR","Response message is : "+response.message());
+                    //Kick back to login
 
                 }
             }
@@ -177,6 +182,8 @@ public class ssoLoginFragment extends DialogFragment {
             @Override
             public void onFailure(Call<User> call, Throwable t) {
                 Log.e("SSO_LOGIN_ERR", "Request failed with throwable: " + t);
+                //Call Failed. Try again
+                //Kick back to login
             }
         });
         //endregion

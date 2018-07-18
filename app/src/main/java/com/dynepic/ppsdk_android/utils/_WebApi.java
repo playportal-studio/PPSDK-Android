@@ -8,10 +8,14 @@ import com.dynepic.ppsdk_android.models.User;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -31,15 +35,16 @@ public class _WebApi {
 
 	private static PPWebApiInterface sPPWebApiInterface;
 
-	public static PPWebApiInterface getApi(Context CONTEXT) {
+	public static PPWebApiInterface getApi(Interceptor NetworkInterceptor) {
 		//PPManager ppsdk = new PPManager(CONTEXT);
+		//ToDo: logging interceptor
 
 		if (sPPWebApiInterface == null) {
-			HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-			interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+//			HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+//			interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 			OkHttpClient client = new OkHttpClient.Builder()
-					.addInterceptor(interceptor).build();
-
+					.addNetworkInterceptor(NetworkInterceptor)
+					.build();
 			Gson gson = new GsonBuilder()
 					.setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
 					.create();
