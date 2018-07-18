@@ -1,15 +1,15 @@
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
-version '1.0.0'
-group 'com.bintray'
+version '0.0.0.1'
+group 'com.dynepic.ppsdk_android'
 
 publishing {
     publications {
         Production(MavenPublication) {
             artifact("$buildDir/outputs/aar/app-release.aar")
-            groupId
-            artifactId 'example'
+            groupId 'com.dynepic.ppsdk_android'
+            artifactId 'ppsdk_android'
             version this.version
 
             pom.withXml {
@@ -38,7 +38,7 @@ bintray {
     override = true
     pkg {
         repo = 'maven'
-        name = 'PPSDK_Android'
+        name = 'PPSDK-Android'
         description = "The playPORTAL SDK for Android"
         publish = true
         publicDownloadNumbers = true
@@ -47,7 +47,7 @@ bintray {
         dryRun = true
         version {
             name = this.version
-            desc = "Example ${this.version}"
+            desc = this.version
             released = new Date()
             vcsTag = this.version
         }
