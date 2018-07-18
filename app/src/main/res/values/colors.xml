@@ -1,6 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+
+    <color name="colorPrimary">@color/primary</color>
+    <color name="colorAccent">@color/primary_light</color>
+    <color name="colorPrimaryDark">@color/primary_dark</color>
+
+
+    <!-- Colors Generated from Material Design Standards -->
+    <color name="primaryColor">@color/primary</color>
+    <color name="primaryLightColor">@color/primary_light</color>
+    <color name="primaryDarkColor">@color/primary_dark</color>
+    <color name="secondaryColor">@color/secondary</color>
+    <color name="secondaryLightColor">@color/secondary_light</color>
+    <color name="secondaryDarkColor">@color/secondary_dark</color>
+    <color name="primaryTextColor">#000000</color>
+    <color name="secondaryTextColor">#000000</color>
+
+    <color name="primary">#00acc1</color>
+    <color name="primary_light">#80deea</color>
+    <color name="primary_dark">#00838f</color>
+    <color name="secondary">#00cf87</color>
+    <color name="secondary_light">#60ffb7</color>
+    <color name="secondary_dark">#009d5a</color>
+
+    <color name="accent">#02BFCA</color>
+
+    <color name="primary_text">#212121</color>
+    <color name="secondary_text">#757575</color>
+    <color name="icons">#212121</color>
+    <color name="divider">#212121</color>
+    <color name="backgroundColorWhite">#ffffff</color>
+    <color name="transparent">#00ffffff</color>
+    <color name="transparent_thin">#06ffffff</color>
+    <color name="backgroundColor">#212121</color>
+
+    <color name="blue">#33b5e5</color>
+    <color name="purple">#FFAA66CC</color>
+    <color name="green">#66bb6a</color>
+    <color name="orange">#ffbb33</color>
+    <color name="red">#FFFF4444</color>
+    <color name="dark_blue">#006064</color>
+    <color name="dark_purple">#FF9933CC</color>
+    <color name="dark_green">#669900</color>
+    <color name="dark_orange">#FFFF8800</color>
+    <color name="dark_red">#FFCC0000</color>
+
+    <color name="grey">#9e9e9e</color>
+    <color name="dark_grey">#424242</color>
+    <color name="light_grey">#eeeeee</color>
+
+    <color name="white">#FFFFFF</color>
+    <color name="black">#111111</color>
+
+    <color name="io_kids_lime">#9EDF21</color>
+    <color name="io_kids_light">#00D59B</color>
+    <color name="io_kids_green">#00CF87</color>
+    <color name="io_kids_blue">#02BFCA</color>
+
+    <!--widget-->
+    <color name="gray">#444444</color>
+    <color name="gray_light">#BBBBBB</color>
+    <color name="gray_very_light">#DDDDDD</color>
+
 </resources>

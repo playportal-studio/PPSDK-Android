@@ -1,515 +1,424 @@
 package com.dynepic.ppsdk_android;
 
+import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.net.Uri;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.util.Log;
 
-import com.dynepic.ppsdk_android.models.Tokens;
+import com.dynepic.ppsdk_android.fragments.ssoLoginFragment;
 import com.dynepic.ppsdk_android.models.User;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.squareup.picasso.OkHttp3Downloader;
+import com.dynepic.ppsdk_android.utils._DevPrefs;
+import com.dynepic.ppsdk_android.utils._DialogFragments;
+import com.dynepic.ppsdk_android.utils._UserPrefs;
 
-import java.io.IOException;
-import java.time.DateTimeException;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.Headers;
-import retrofit2.http.POST;
-import retrofit2.http.QueryMap;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
+import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
+
+
+/**
+ * This class should handle most of the activity within the app.
+
+ * Configure PPManager
+ * Show SSO Login Form
+ * Get Buckets
+ * Set Buckets
+ * Get User
+ * Set User
+
+ ===============
+ = Basic Usage =
+ ===============
+
+ * Initialize your activity's context. Content cannot be referenced from static context.
+ * Requires CONTEXT and ACTIVITY_CONTEXT
+ *
+ * Activity context is normally 'this', or references the controlling activity.
+ * The same applies for normal context.
+ * IE:
+ * 	  Activity ACTIVITY_CONTEXT = this;
+ * 	  Context CONTEXT = this;
+
+ PPManager ppManager = new PPManager(CONTEXT, ACTIVITY_CONTEXT);
+
+
+ * Configure your Client ID, Client Secret, and Redirect URL.
+ * This can be checked using isConfigured() - see below.
+
+ ppManager.configure("CLIENT_ID","CLIENT_SECRET","REDIRECT_URL")
+
+
+ * Changing config settings is done through ppManager.getConfiguration()
+ * Make sure that ppManager is instantiated.
+ * All config settings should be changed this way.
+
+ ppManager.getConfiguration().setClientRedirect("REDIRECT_STRING")
+
+
+ * Call the Single-Sign-On Login page
+ * The intent indicates which activity you want to go to after passing the SSO Login
+
+ ppManager.showSSOLogin(INTENT)
+
+
+ * Check to see if the PPManager has been configured at launch
+ * This is normally a good check in case the user has cleared application data.
+ * Returns TRUE if the id, secret, and redirect-url are all non-null AND non-empty strings.
+
+ ppManager.isConfigured()
+
+
+ * Getting logged in user data is done through get and set methods
+ * Returns a string value of the user data requested
+ * User Data should be handled this way:
+
+ ppManager.getUserData().getValue();
+ ppManager.getUserData().setValue();
+
+
+
+ ===================
+ = Friends Request =
+ ===================
+
+ * In your controlling activity or class, you need to specify "implements"
+
+ public class YOUR_CLASS_NAME implements PPManager.FriendsService.onFriendsResponse {}
+
+ * Create request, specify activity, delegate, execute request
+
+ PPManager.FriendsService.getFriends friendsRequest = new PPManager.FriendsService.getFriends(ACTIVITY);
+ friendsRequest.delegate = this;
+ friendsRequest.execute((Void) null);
+
+ * Create @Override method to get results after the Async Call has been completed
+ * Returns an ArrayList of Strings of user Handles
+
+ /@Override
+ public void onFriendsResponse(ArrayList<String> output) {
+    //update your UI based on response
+ }
+
+ *
+ */
+
 
 public class PPManager {
 
-    // Public API calls for SDK
-	public void readBucket(String bucketName, String key, PPManager.CallbackFunction cb) {
-		PPdatasvc.readBucket(bucketName, key, cb);
-	}
-	public void writeBucket(String bucketName, String key, String value, Boolean push, PPManager.CallbackFunction cb) {
-		PPdatasvc.writeBucket(bucketName, key, value, push, cb);
-	}
-	public String getPrivateDataStorage() {
-		return PPuserobj.myUserObject.getMyDataStorage();
-	}
-	public String getPublicDataStorage() {
-		return PPuserobj.myUserObject.getMyGlobalDataStorage();
-	}
-	PPUserObject getProfile() {
-		return PPusersvc.getProfile(false);
+	private Context CONTEXT;
+	private Activity ACTIVITY;
+	private _DevPrefs devPrefs;
+	private _UserPrefs userPrefs;
+
+	public PPManager(Context context, Activity activity){
+		CONTEXT = context;
+		ACTIVITY = activity;
+		devPrefs = new _DevPrefs(CONTEXT);
+		userPrefs = new _UserPrefs(CONTEXT);
 	}
 
-
-	public Context androidContext;  // context of parent app for this SDK
-
-
-	private static Boolean refreshInProgress = false;
-
-
-    String apiUrlBase =  "https://sandbox.iokids.net";
-	String apiOauthBase = "https://sandbox.iokids.net/oauth/";
-	String accessToken;
-    String refreshToken;
-	String nvClientId;
-	String clientId;
-    String clientSecret;
-    String redirectURI;
-    ZonedDateTime expirationTime;
-    String auth_code;
-	boolean setImAnonymousStatus;
-
-	// SDK objectd
-    PPUserObject PPuserobj = new PPUserObject();
-    PPUserService PPusersvc = new PPUserService();
-    PPFriendsObject PPfriendsobj = new PPFriendsObject();
-    PPDataService PPdatasvc= new PPDataService();
-
-	// PPManager is a singleton
-	private static PPManager ppManager = new PPManager();
-	public static PPManager getInstance( ) { return ppManager; }
-	private PPManager() {  // A private Constructor prevents any other class from instantiating.
-		Log.d("PPManager:", "private constructor invoked");
-	}
-
-	private SharedPreferences sharedPrefs;
-
-	public interface PPOauthService {
-		@Headers({
-				"Accept: application/json",
-				"Content-Type: application/json"
-		})
-		@POST("token")
-		Call<Tokens> getTokens(@QueryMap Map<String, String> queryparms);
-	}
-
-	// Allow app to register a callback, which is invoked on user profile updates
-	UserListenerFunction userListenerFnx;
-	public interface UserListenerFunction { public void uf(PPUserObject u);  }
-	public void addUserListener(UserListenerFunction u) { Log.d("adding userListener: ", u.toString()); userListenerFnx = u; }
-    private void userListener(PPUserObject u) { if(userListenerFnx != null) userListenerFnx.uf(u); };
-
-	public interface BucketCallbackFunction {
-		public boolean f(String bucketName, List<String> bucketUsers, boolean bucketIsPublic, String error);
-	}
-	public interface CallbackFunction {
-		public void fse(String bucketName, String key, String data, String error);
-	}
-
-	public interface UserProfileCallbackFunction {
-		public void f(ArrayList<User> friends);
-	}
-
-    public void configure(String id, String sec, String redir, Context context)
-    {
-		Log.d("context:", context.toString());
-		sharedPrefs = context.getSharedPreferences("ppsdk-preferences", Context.MODE_PRIVATE);
-		androidContext = context;
-		getAuthPreferences();
-
-        clientId = id;
-        clientSecret = sec;
-        redirectURI = redir;
-        Log.d("PPSDK configure", id + " : " + sec + " : " + redir);
-
-        if(isAuthenticated()) {
-			getUserPreferences();
-            if(getProfileAndBucket()) {
-                userListener(PPuserobj);
-                return;
-            }
-        }
-        userListener(null);
+	//region Configuration
+	public void configure(String CLIENT_ID, String CLIENT_SECRET, String REDIRECT_URL) {
+		Log.d("PPManager.Configure","\nConfiguring PPManager:\nID : "+CLIENT_ID+"\nSEC : "+CLIENT_SECRET+"\nREDIR : "+REDIRECT_URL);
+		devPrefs.setClientId(CLIENT_ID);
+		devPrefs.setClientSecret(CLIENT_SECRET);
+		devPrefs.setClientRedirect(REDIRECT_URL);
     }
 
-    public boolean getProfileAndBucket() {
-		Log.d("getProfileAndBucket: ", "");
-        if(PPusersvc.getProfile(true) != null) {
-			return true;
-		} else {
-        	return false;
-		}
-    }
-
-
-    public static void handleOpenURL(String url)
-    {
-    	PPManager ppsdk = PPManager.getInstance();
-
-    	ppsdk.setImAnonymousStatus = false;
-
-        Uri uri = Uri.parse(url);
-        String protocol = uri.getScheme();
-        String server = uri.getAuthority();
-        String path = uri.getPath();
-        Set<String> args = uri.getQueryParameterNames();
-
-		Log.d("args: ", args.toString());
-
-		ppsdk.auth_code = uri.getQueryParameter("code");
-		ppsdk.accessToken = uri.getQueryParameter("access_token");
-		ppsdk.refreshToken = uri.getQueryParameter("refresh_token");
-		String expires_in = uri.getQueryParameter("expires_in");
-
-		ZonedDateTime date = ZonedDateTime.now();
-		if (expires_in == "1d") {
-
-			date.plusHours(12);
-		} else {
-			date.plusHours(1);
-		}
-		ppsdk.expirationTime = date;
-
-		ppsdk.setAuthPreferences(); // save server tokens, etc.
-
-		if(ppsdk.getProfileAndBucket()) {
-			ppsdk.userListener(null);
-		} else {
-		}
-
-    }
-
-    public boolean getInitialToken()
-    {
-        Map<String, String> queryparms = new HashMap<String, String>();
-        queryparms.put("code", auth_code);
-        queryparms.put("redirect_uri",redirectURI);
-        queryparms.put("client_id",clientId);
-		queryparms.put("client_secret", clientSecret);
-		queryparms.put("grant_type", "implicit");
-        Log.d("getInitialToken parms: ", queryparms.toString());
-
-
-		Gson gson = new GsonBuilder()
-				.setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
-				.create();
-
-		Retrofit retrofit = new Retrofit.Builder()
-				.baseUrl(apiUrlBase)
-				.addConverterFactory(GsonConverterFactory.create(gson))
-				.build();
-
-		PPOauthService authService = retrofit.create(PPOauthService.class);
-		Call<Tokens> call = authService.getTokens(queryparms);
-		Log.d("queryparms: ", queryparms.toString());
-		call.enqueue(new Callback<Tokens>() {
-						 @Override
-						 public void onResponse(Call<Tokens> call, Response<Tokens> response) {
-							 int statusCode = response.code();
-							 Log.d("status: ", String.valueOf(statusCode));
-							 Tokens tokens = response.body();
-							 Log.d("getInitialToken res: ", String.valueOf(response.body()));
-						 }
-
-						 @Override
-						 public void onFailure(Call<Tokens> call, Throwable t) {
-							 Log.e("getInitialToken error:", "failed with " + t);
-						 }
-					 });
-		return true;
+    public Boolean isConfigured(){
+		return devPrefs.exists();
 	}
 
-	public String getMyId()
-	{
-		return "";
+	public Configuration getConfiguration(){
+		return new Configuration();
 	}
 
-	public String getAccessToken()
-	{
-		return accessToken;
+	public class Configuration {
+
+		public String getClientId() {
+			return devPrefs.getClientId();
+		}
+
+		public void setClientId(String value) {
+			devPrefs.setClientId(value);
+		}
+
+		public String getClientSecret() {
+			return devPrefs.getClientSecret();
+		}
+
+		public void setClientSecret(String value) {
+			devPrefs.setClientSecret(value);
+		}
+
+		public String getClientRedirect() {
+			return devPrefs.getClientRedirect();
+		}
+
+		public void setClientRedirect(String value) {
+			devPrefs.setClientRedirect(value);
+		}
+
+		public String getClientAccessToken() {
+			return devPrefs.getClientAccessToken();
+		}
+
+		public void setClientAccessToken(String value) {
+			devPrefs.setClientAccessToken(value);
+		}
+
+		public boolean exists(){
+			return devPrefs.exists();
+		}
+
+		public void clear(){
+			devPrefs.clear();
+		}
+
+	}
+	//endregion
+
+	//region UserData
+	public UserData getUserData(){
+		return new UserData();
 	}
 
-    public boolean refreshAccessToken() {
-		if ((refreshToken == null) || (refreshToken == "unknown")) {
-			Log.e("ERROR", "attempting to refresh token with null refreshToken:");
-			return false;
+	public class UserData{
+
+		public Boolean hasUser(){
+			return userPrefs.exists();
 		}
 
-		synchronized (refreshInProgress) {
-			if (refreshInProgress) return true;
-			refreshInProgress = true;
+		public String getAccountType() {
+			return userPrefs.getAccountType();
 		}
 
-		Map<String, String> queryparms = new HashMap<String, String>();
-		queryparms.put("client_id", clientId);
-		queryparms.put("client_secret", clientSecret);
-		queryparms.put("refresh_token", refreshToken);
-		queryparms.put("grant_type", "refresh_token");
-		Log.d("refreshAccessToken parms: ", queryparms.toString());
+		public void setAccountType(String accountType) {
+			userPrefs.setAccountType(accountType);
+		}
 
-		Gson gson = new GsonBuilder()
-				.setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
-				.create();
+		public String getCountry() {
+			return userPrefs.getCountry();
+		}
 
-		Retrofit retrofit = new Retrofit.Builder()
-				.baseUrl(apiOauthBase)
-				.addConverterFactory(GsonConverterFactory.create(gson))
-				.build();
+		public void setCountry(String country) {
+			userPrefs.setCountry(country);
+		}
 
-		PPOauthService authService = retrofit.create(PPOauthService.class);
-		Call<Tokens> call = authService.getTokens(queryparms);
-		Log.d("queryparms: ", queryparms.toString());
-		call.enqueue(new Callback<Tokens>() {
-			@Override
-			public void onResponse(Call<Tokens> call, Response<Tokens> response) {
-				int statusCode = response.code();
-				Log.d("status: ", String.valueOf(statusCode));
-				if (statusCode == 200) {
-					Tokens tokens = response.body();
-					extractAndSaveTokens(tokens);
-					Log.d("refreshAccessToken res: ", String.valueOf(response.body()));
-					refreshInProgress = false;
-				} else {
-					Log.e("Error", "refreshingAccessToken");
-					refreshInProgress = false;
-				}
+		public String getCoverPhoto() {
+			return userPrefs.getCoverPhoto();
+		}
+
+		public void setCoverPhoto(String coverPhoto) {
+			userPrefs.setCoverPhoto(coverPhoto);
+		}
+
+		public String getFirstName() {
+			return userPrefs.getFirstName();
+		}
+
+		public void setFirstName(String firstName) {
+			userPrefs.setFirstName(firstName);
+		}
+
+		public String getHandle() {
+			return userPrefs.getHandle();
+		}
+
+		public void setHandle(String handle) {
+			userPrefs.setHandle(handle);
+		}
+
+		public String getLastName() {
+			return userPrefs.getLastName();
+		}
+
+		public void setLastName(String lastName) {
+			userPrefs.setLastName(lastName);
+		}
+
+		public String getProfilePic() {
+			return userPrefs.getProfilePic();
+		}
+
+		public void setProfilePic(String profilePic) {
+			userPrefs.setProfilePic(profilePic);
+		}
+
+		public String getUserId() {
+			return userPrefs.getUserId();
+		}
+
+		public void setUserId(String userId) {
+			userPrefs.setUserId(userId);
+		}
+
+		public String getUserType() {
+			return userPrefs.getUserType();
+		}
+
+		public void setUserType(String userType) {
+			userPrefs.setUserType(userType);
+		}
+
+		public String getMyDataStorage() {
+			return userPrefs.getMyDataStorage();
+		}
+
+		public void setMyDataStorage(String myDataStorage) {
+			userPrefs.setMyDataStorage(myDataStorage);
+		}
+
+		public String getMyGlobalDataStorage() {
+			return userPrefs.getMyGlobalDataStorage();
+		}
+
+		public void setMyGlobalDataStorage(String myGlobalDataStorage) {
+			userPrefs.setMyGlobalDataStorage(myGlobalDataStorage);
+		}
+
+		public ArrayList<String> getStoredFriendData(){
+			if(userPrefs.getFriendData()!=null){
+				return userPrefs.getFriendData();
 			}
-
-			@Override
-			public void onFailure(Call<Tokens> call, Throwable t) {
-				Log.e("refreshAccessToken error:", "failed with " + t);
-				refreshInProgress = false;
+			else{
+				return new ArrayList<>();
 			}
-		});
-
-		return true;
-
-    }
-
-    public void extractAndSaveTokens(Tokens tokens)
-    {
-    	Log.d("extractAndSaveTokens:", tokens.toString());
-		accessToken = tokens.getAccessToken();
-		refreshToken = tokens.getRefreshToken();
-
-		String expires_in = tokens.getExpiresIn();
-		ZonedDateTime date = ZonedDateTime.now();
-		if (expires_in == "1d") {
-			date.plusHours(12);
-		} else {
-			date.plusHours(1);
 		}
-		expirationTime = date;
-		nvClientId = clientId;
-		setAuthPreferences();
-    }
-
-    public boolean allTokensExist() {
-		Log.d("allTokensExist: at:", accessToken);
-		Log.d("allTokensExist: rt:", refreshToken);
-		if ((refreshToken != null) && (refreshToken != "unknown") && (accessToken != null) && (accessToken != "unknown")) {
-			Log.d("allTokensExist:", "true");
-			return true;
-		} else {
-			invalidateUserPreferences();
-			Log.d("allTokensExist:", "false");
-			return false;
-		}
-	}
-
-    public boolean tokensNotExpired()
-    {
-    	ZonedDateTime currentDT = ZonedDateTime.now();
-		Log.d("current dateTime", currentDT.toString());
-		Log.d("Token expirationTime: ", expirationTime.toString());
-		if(currentDT.isBefore(expirationTime))  {
-			return TRUE;
-		} else {
-			Log.d("Token expirationTime: ", expirationTime.toString());
-			Log.d("present time: ", currentDT.toString());
-			return FALSE;
-		}
-    }
-
-	public void storeTokensInKeychain()
-	{
 
 	}
+	//endregion
 
-    public boolean isAuthenticated()
-    {
-        if(allTokensExist()) {
-            if(tokensNotExpired()) {
-				if(clientId.equals(nvClientId)) {
-					Log.d("isAuthenticated:", "true");
-					return true;
-				} else {
-					Log.d("isAuthenticated:", "false - wrong app id");
-					invalidateUserPreferences();
-					return false;
-				}
-            } else {
-                if(refreshAccessToken()) {
-					if(clientId.equals(nvClientId)) {
-						Log.d("isAuthenticated:", "true");
-						return true;
-					} else {
-						Log.d("isAuthenticated:", "false - wrong app id");
-						invalidateUserPreferences();
-						return false;
+	public FriendsService getFriendsManager(){
+		return new FriendsService();
+	}
+
+	public class FriendsService {
+
+		FriendsService(){
+
+		}
+
+		public void getFriendsData(Interceptor interceptor){
+            Log.d(" GET_FRIENDS","========================1");
+			Call<ArrayList<User>> friendsCall = getApi(interceptor).getFriends(devPrefs.getClientAccessToken());
+            Log.d(" GET_FRIENDS","========================2");
+				friendsCall.enqueue(new Callback<ArrayList<User>>() {
+					@Override
+					public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
+                        Log.d(" GET_FRIENDS","========================4");
+						if (response.code() == 200) {
+                            Log.d(" GET_FRIENDS","========================5");
+							System.out.println(response.body());
+//							friendsList = response.body();
+//							for (int i=0;i>=friendsList.size(); i++){
+//								allFriendsHandles.add(friendsList.get(i).getHandle());
+//							}
+						}
+						else{
+							Log.e(" GET_FRIENDS_ERR","Error getting friends data.");
+							Log.e(" GET_FRIENDS_ERR","Response code is : "+response.code());
+							Log.e(" GET_FRIENDS_ERR","Response message is : "+response.message());
+						}
 					}
-				} else {
-					Log.d("isAuthenticated:", "false");
-					invalidateUserPreferences();
-					return false;
-                }
-            }
-        }
-		Log.d("isAuthenticated:", "false");
-		invalidateUserPreferences();
-		return false;
-    }
 
-    public void logout()
-    {
-		accessToken = null;
-		refreshToken = null;
-		setAuthPreferences();
-		invalidateUserPreferences();
-    }
-
-	public void AnonymousLogin() {
-	}
-
-	public String getPicassoParms()
-	{
-		return apiUrlBase + "/user/v1/my/profile/picture";
-	}
-
-	private static class BasicAuthInterceptor implements Interceptor {
-
-		@Override
-		public okhttp3.Response intercept(Chain chain) throws IOException {
-			final PPManager ppsdk = PPManager.getInstance();
-			final Request original = chain.request();
-			final Request.Builder requestBuilder = original.newBuilder()
-					.header("Authorization", "Bearer " + ppsdk.accessToken);
-			Request request = requestBuilder.build();
-			return chain.proceed(requestBuilder.build());
+					@Override
+					public void onFailure(Call<ArrayList<User>> call, Throwable t) {
+						Log.e("GET_FRIENDS_ERR", "Request failed with throwable: " + t);
+					}
+				});
 		}
-	}
-	public OkHttp3Downloader createDownloader() {
 
-// For logging - enable this section (adds a new Interceptor to OkHttp
-		HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-		logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-		OkHttpClient okHttpClient = new OkHttpClient.Builder()
-				.addInterceptor(new BasicAuthInterceptor())
-				.addInterceptor(logging)
-//				.readTimeout(30, TimeUnit.SECONDS)
-//				.writeTimeout(30, TimeUnit.SECONDS)
-//				.connectTimeout(30, TimeUnit.SECONDS)
-				.build();
+//		public interface FriendsResponse {
+//			void onFriendsResponse(ArrayList<String> output);
+//		}
+//
+//		public static class getFriends extends AsyncTask<Void, Void, ArrayList<String>> {
+//
+//			public FriendsResponse delegate;
+//			private ArrayList<User> friendsList;
+//			private ArrayList<String> allFriendsHandles;
+//			private final WeakReference<Activity> weakActivity;
+//
+//			public getFriends(Activity activity){
+//				weakActivity = new WeakReference<>(activity);;
+//			}
+//
+//			@Override
+//			protected ArrayList<String> doInBackground(Void... params) {
+//				_DevPrefs devPrefs = new _DevPrefs(weakActivity.get());
+//				allFriendsHandles = new ArrayList<>();
+//				Call<ArrayList<User>> friendsCall = getApi(weakActivity.get()).getFriends(devPrefs.getClientAccessToken());
+//				friendsCall.enqueue(new Callback<ArrayList<User>>() {
+//					@Override
+//					public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
+//						if (response.code() == 200) {
+//							System.out.println(response.body());
+//							friendsList = response.body();
+//							for (int i=0;i>=friendsList.size(); i++){
+//								allFriendsHandles.add(friendsList.get(i).getHandle());
+//							}
+//						}
+//						else{
+//							Log.e(" GET_FRIENDS_ERR","Error getting friends data.");
+//							Log.e(" GET_FRIENDS_ERR","Response code is : "+response.code());
+//							Log.e(" GET_FRIENDS_ERR","Response message is : "+response.message());
+//						}
+//					}
+//
+//					@Override
+//					public void onFailure(Call<ArrayList<User>> call, Throwable t) {
+//						Log.e("GET_FRIENDS_ERR", "Request failed with throwable: " + t);
+//					}
+//				});
+//				return allFriendsHandles;
+//			}
+//
+//			@Override
+//			protected void onPostExecute(final ArrayList<String> result) {
+//				delegate.onFriendsResponse(result);
+//			}
+//
+//			@Override
+//			protected void onCancelled() {
+//			}
+//		}
 
-		return new OkHttp3Downloader(okHttpClient);
-	}
-
-
-
-	public ZonedDateTime dateTimeFromString(String datestring)
-    {
-		try {
-			DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
-			return ZonedDateTime.parse(datestring, formatter);
-		}
-		catch (DateTimeParseException exc) {
-			Log.e("%s is not parsable!%n", datestring);
-			throw exc;      // Rethrow the exception.
-		}
-    }
-
-    public String stringFromDateTime(ZonedDateTime dateTime)
-    {
-		try {
-			DateTimeFormatter format = DateTimeFormatter.ISO_DATE_TIME;
-			return dateTime.format(format);
-		}
-		catch (DateTimeException exc) {
-			System.out.printf("dateTime input can't be formatted!");
-			throw exc;
-		}
-    }
-
-	public void setImAnonymousStatus(boolean imAnonymous)
-    {
-    }
-
-    public boolean getImAnonymousStatus()
-    {
-        return false;
-    }
-
-
-
-	private void getAuthPreferences() {
-		nvClientId = sharedPrefs.getString("clientId", "unknown");
-		accessToken = sharedPrefs.getString("accessToken", "unknown");
-		refreshToken = sharedPrefs.getString("refreshToken", "unknown");
-		String defaultDateTime = stringFromDateTime(ZonedDateTime.now().minusHours(1));
-		Log.d("defaultDateTime:", defaultDateTime);
-		expirationTime = dateTimeFromString(sharedPrefs.getString("expirationTime", defaultDateTime));
-
-		Log.d("getAuthPreferences id:", nvClientId);
-		Log.d("getAuthPreferences at:", accessToken );
-		Log.d("getAuthPreferences rt:", refreshToken );
-		Log.d("getAuthPreferences et:", expirationTime.toString());
 	}
 
-	private void setAuthPreferences() {
-		SharedPreferences.Editor editor = sharedPrefs.edit();
-		editor.putString("clientId", nvClientId);
-		editor.putString("accessToken", accessToken);
-		editor.putString("refreshToken", refreshToken);
-		editor.putString("expirationTime", stringFromDateTime(expirationTime));
-		editor.commit();
-
-		Log.d("setAuthPreferences id:", nvClientId);
-		Log.d("setAuthPreferences at:", accessToken != null? accessToken : "invalid accessToken");
-		Log.d("setAuthPreferences rt:", refreshToken  != null? accessToken : "invalid refreshToken");
-		Log.d("setAuthPreferences et:", expirationTime.toString());
-	}
-	private void getUserPreferences() {
-		String id = sharedPrefs.getString("newUserId", "unknown");
-		String handle = sharedPrefs.getString("handle", "unknown");
-		PPuserobj.initWithUserPreferences(id, handle);
-		Log.d("getUserPreferences userId:", PPuserobj.myUserObject.getUserId());
-		Log.d("getUserPreferences handle:", PPuserobj.myUserObject.getHandle());
+	public void showSSOLogin(Intent intent){
+		Log.d("PPManager.showSSOLogin","Launching playPORTAL SSO...");
+		ssoLoginFragment ssoLoginFragment = new ssoLoginFragment();
+		ssoLoginFragment.setNextActivity(intent);
+		_DialogFragments.showDialogFragment(ACTIVITY, ssoLoginFragment, true, "SSO");
 	}
 
-	public void invalidateUserPreferences() {
-		Log.d("invalidating UserPreferences :", "");
-		SharedPreferences.Editor editor = sharedPrefs.edit();
-		editor.putString("newUserId", "unknown");
-		editor.putString("handle", "unknown");
-		editor.commit();
+	public void getUserBuckets(){
+
 	}
 
-	public void setUserPreferences() {
-		SharedPreferences.Editor editor = sharedPrefs.edit();
-		String id = PPuserobj.myUserObject.getUserId();
-		String handle = PPuserobj.myUserObject.getHandle();
-		editor.putString("newUserId", id);
-		editor.putString("handle", handle);
-		editor.commit();
+	public void getGlobalBucket(){
 
-		Log.d("setUserPreferences userId:", id);
-		Log.d("setUserPreferences handle:", handle);
 	}
+
+	public void setUserBucket(){
+
+	}
+
+	public void setGlobalBucket(){
+
+	}
+
+
+
+
+
+
 }
