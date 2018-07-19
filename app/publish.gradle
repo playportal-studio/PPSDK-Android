@@ -1,23 +1,20 @@
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
-version '0.0.0.1'
+version '0.0.0.2'
 group 'com.dynepic.ppsdk_android'
 
 publishing {
     publications {
         Production(MavenPublication) {
-            artifact("$buildDir/outputs/aar/app-release.aar")
+            artifact("app/build/outputs/aar/app-release.aar")
             groupId 'com.dynepic.ppsdk_android'
             artifactId 'ppsdk_android'
             version this.version
 
             pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-
-                // Iterate over the implementation dependencies (we don't want the test ones), adding a <dependency> node for each
-                configurations.implementation.allDependencies.each {
-                    // Ensure dependencies such as fileTree are not included in the pom.
+                configurations.detachedConfiguration().allDependencies.each {
+                    // Ensure dependencies such as fileTree are not included.
                     if (it.name != 'unspecified') {
                         def dependencyNode = dependenciesNode.appendNode('dependency')
                         dependencyNode.appendNode('groupId', it.group)
@@ -38,7 +35,7 @@ bintray {
     override = true
     pkg {
         repo = 'maven'
-        name = 'PPSDK-Android'
+        name = 'ppsdk_android'
         description = "The playPORTAL SDK for Android"
         publish = true
         publicDownloadNumbers = true

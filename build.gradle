@@ -28,10 +28,13 @@ allprojects {
     repositories {
         google()
         jcenter()
-    }
-    tasks.withType(Javadoc) {
-        options.addStringOption('Xdoclint:none', '-quiet')
-        options.addStringOption('encoding', 'UTF-8')
+        maven {
+            url  "https://dynepic.bintray.com/PPSDK_Android"
+            credentials {
+                username 'presadb'
+                password 'c8d68901f94373e759067a41279e9b5799d4ce77'
+            }
+        }
     }
 }
 
