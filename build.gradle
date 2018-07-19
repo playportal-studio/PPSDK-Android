@@ -6,7 +6,7 @@ buildscript {
         google()
         jcenter()
         maven {
-            url  "https://dynepic.bintray.com/PPSDK_Android"
+            url  "https://dynepic.bintray.com/maven"
             credentials {
                 username 'presadb'
                 password 'c8d68901f94373e759067a41279e9b5799d4ce77'
@@ -28,14 +28,5 @@ allprojects {
     repositories {
         google()
         jcenter()
-        maven {
-            url  "https://dynepic.bintray.com/PPSDK_Android"
-            credentials {
-                username 'presadb'
-                password 'c8d68901f94373e759067a41279e9b5799d4ce77'
-            }
-        }
     }
 }
-
-apply from: 'app/publish.gradle'
