@@ -3,7 +3,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'com.dynepic.ppsdk_android'
-version = '0.0.0.3'
+version = '0.0.0.4'
 
 
 // Bintray
@@ -21,7 +21,7 @@ ext {
     siteUrl = 'https://github.com/Dynepic/PPSDK-Android'
     gitUrl = 'https://github.com/Dynepic/PPSDK-Android.git'
 
-    libraryVersion = '0.0.0.3'
+    libraryVersion = '0.0.0.4'
 
     developerId = 'presadb' // Maven plugin uses this. I don't know if it needs to be anything special.
     developerName = 'Ethan Price'
@@ -164,9 +164,8 @@ Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
 bintray {
-    user = 'presadb'//properties.getProperty("bintray.user")
-    key = '6a4ecddeb7f0942f101019bbbf32738737d80d24'//properties.getProperty("bintray.apikey")
-
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
     configurations = ['archives']
     pkg {
         repo = bintrayRepo
