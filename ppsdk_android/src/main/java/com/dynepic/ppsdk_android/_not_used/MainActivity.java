@@ -155,7 +155,6 @@ package com.dynepic.ppsdk_android._not_used;//package com.dynepic.ppsdk_demoapp;
 //							.setAction("Action", null).show();
 //					mTextMessage = (TextView) findViewById(R.id.message);
 //					mGlobalTextMessage = (TextView) findViewById(R.id.globalmessage);
-//					//ToDo: Verify that PPdatasvc and PPuserobj should be public
 //					ppsdk.PPdatasvc.readBucket(ppsdk.PPuserobj.myUserObject.getMyDataStorage(), "TestData", (String readKey, String readValue, String readData, String readError) -> {
 //						if (readError == null) {
 //							Log.d("Testdata read key:", readKey + " value:" + readValue + " data:" + readData);

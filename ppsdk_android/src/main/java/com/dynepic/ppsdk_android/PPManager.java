@@ -240,7 +240,7 @@ public class PPManager {
 			return userPrefs.getMyGlobalDataStorage();
 		}
 
-		//ToDo: This returns users as a string, not as user objects.
+		//This returns users as a string, not as user objects.
 		// sharedPrefs has issues with storing objects.
 //		public ArrayList<String> getStoredFriendData(){
 //			if(userPrefs.getFriendData()!=null){
@@ -272,7 +272,6 @@ public class PPManager {
 						if (response.code() == 200) {
 							System.out.println(response.body());
 							friendsList = response.body();
-							//ToDo: hand back as user object list
 						}
 						else{
 							Log.e(" GET_FRIENDS_ERR","Error getting friends data.");

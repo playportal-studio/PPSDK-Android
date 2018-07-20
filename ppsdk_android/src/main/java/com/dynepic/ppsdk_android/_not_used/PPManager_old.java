@@ -159,7 +159,6 @@ package com.dynepic.ppsdk_android._not_used;//package com.dynepic.ppsdk_android;
 ////		}
 ////    }
 //
-//// ToDo: Since we aren't using getInitialToken(), this can be removed?
 //    public static void handleOpenURL(String url, Context CONTEXT) {
 //
 //		String accessToken;
@@ -207,7 +206,6 @@ package com.dynepic.ppsdk_android._not_used;//package com.dynepic.ppsdk_android;
 //
 //    }
 //
-//// ToDo: not used?
 ////    public boolean getInitialToken() {
 ////        Map<String, String> queryparms = new HashMap<String, String>();
 ////        queryparms.put("code", auth_code);
@@ -247,7 +245,6 @@ package com.dynepic.ppsdk_android._not_used;//package com.dynepic.ppsdk_android;
 ////		return true;
 ////	}
 //
-////ToDo: Not used?
 ////	public String getMyId() { return ""; }
 ////
 ////	public String getAccessToken() { return accessToken; }
@@ -323,7 +320,6 @@ package com.dynepic.ppsdk_android._not_used;//package com.dynepic.ppsdk_android;
 ////		}
 ////
 ////		expirationTime = date;
-////		//ToDo: save tokens
 ////		//setAuthPreferences();
 ////    }
 //
@@ -334,7 +330,6 @@ package com.dynepic.ppsdk_android._not_used;//package com.dynepic.ppsdk_android;
 ////			Log.d("allTokensExist:", "true");
 ////			return true;
 ////		} else {
-////			//ToDo: ========
 ////			//invalidateUserPreferences();
 ////			devPrefs.clear();
 ////			Log.d("allTokensExist:", "false");
@@ -400,7 +395,6 @@ package com.dynepic.ppsdk_android._not_used;//package com.dynepic.ppsdk_android;
 ////		accessToken = null;
 ////		refreshToken = null;
 ////		devPrefs.clear();
-////		//ToDo: =====
 ////		//setAuthPreferences();
 ////		//invalidateUserPreferences();
 ////    }
@@ -483,7 +477,6 @@ package com.dynepic.ppsdk_android._not_used;//package com.dynepic.ppsdk_android;
 ////		Log.d("getAuthPreferences et:", expirationTime.toString());
 ////	}
 //
-////ToDo: This is handled in the configure() method?
 ////	private void setAuthPreferences() {
 ////		SharedPreferences.Editor editor = devPrefs.edit();
 ////		editor.putString("clientId", nvClientId);
@@ -498,7 +491,6 @@ package com.dynepic.ppsdk_android._not_used;//package com.dynepic.ppsdk_android;
 ////		Log.d("setAuthPreferences et:", expirationTime.toString());
 ////	}
 //
-////ToDo: This is handled by _SharedPrefs class?
 ////	private void getUserPreferences() {
 ////		String id = devPrefs.getString("newUserId", "unknown");
 ////		String handle = devPrefs.getString("handle", "unknown");

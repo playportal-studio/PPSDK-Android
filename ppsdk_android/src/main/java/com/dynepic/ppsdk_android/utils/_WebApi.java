@@ -37,7 +37,7 @@ public class _WebApi {
 
 	public static PPWebApiInterface getApi(Interceptor NetworkInterceptor) {
 		//PPManager ppsdk = new PPManager(CONTEXT);
-		//ToDo: logging interceptor
+		//ToDo: logging interceptor for third party?
 
 		if (sPPWebApiInterface == null) {
 //			HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();

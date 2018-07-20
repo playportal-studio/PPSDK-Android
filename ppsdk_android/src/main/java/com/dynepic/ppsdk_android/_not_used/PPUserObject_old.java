@@ -108,7 +108,6 @@ package com.dynepic.ppsdk_android._not_used;//package com.dynepic.ppsdk_android.
 //                    } catch (IllegalAccessException e) {
 //                        e.printStackTrace();
 //                    }
-//                    //ToDo:  store user data
 //                    //ppsdk.setUserPreferences(); // stash into nvram
 //
 ////					try {
