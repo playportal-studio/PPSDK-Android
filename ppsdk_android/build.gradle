@@ -44,6 +44,7 @@ android {
     }
     buildTypes {
         release {
+            //ToDo: set 'minifyEnabled' to true or false to obfuscate class files.
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

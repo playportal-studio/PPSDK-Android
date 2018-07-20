@@ -200,98 +200,56 @@ public class PPManager {
 			return userPrefs.getAccountType();
 		}
 
-		public void setAccountType(String accountType) {
-			userPrefs.setAccountType(accountType);
-		}
-
 		public String getCountry() {
 			return userPrefs.getCountry();
-		}
-
-		public void setCountry(String country) {
-			userPrefs.setCountry(country);
 		}
 
 		public String getCoverPhoto() {
 			return userPrefs.getCoverPhoto();
 		}
 
-		public void setCoverPhoto(String coverPhoto) {
-			userPrefs.setCoverPhoto(coverPhoto);
-		}
-
 		public String getFirstName() {
 			return userPrefs.getFirstName();
-		}
-
-		public void setFirstName(String firstName) {
-			userPrefs.setFirstName(firstName);
 		}
 
 		public String getHandle() {
 			return userPrefs.getHandle();
 		}
 
-		public void setHandle(String handle) {
-			userPrefs.setHandle(handle);
-		}
-
 		public String getLastName() {
 			return userPrefs.getLastName();
-		}
-
-		public void setLastName(String lastName) {
-			userPrefs.setLastName(lastName);
 		}
 
 		public String getProfilePic() {
 			return userPrefs.getProfilePic();
 		}
 
-		public void setProfilePic(String profilePic) {
-			userPrefs.setProfilePic(profilePic);
-		}
-
 		public String getUserId() {
 			return userPrefs.getUserId();
-		}
-
-		public void setUserId(String userId) {
-			userPrefs.setUserId(userId);
 		}
 
 		public String getUserType() {
 			return userPrefs.getUserType();
 		}
 
-		public void setUserType(String userType) {
-			userPrefs.setUserType(userType);
-		}
-
 		public String getMyDataStorage() {
 			return userPrefs.getMyDataStorage();
-		}
-
-		public void setMyDataStorage(String myDataStorage) {
-			userPrefs.setMyDataStorage(myDataStorage);
 		}
 
 		public String getMyGlobalDataStorage() {
 			return userPrefs.getMyGlobalDataStorage();
 		}
 
-		public void setMyGlobalDataStorage(String myGlobalDataStorage) {
-			userPrefs.setMyGlobalDataStorage(myGlobalDataStorage);
-		}
-
-		public ArrayList<String> getStoredFriendData(){
-			if(userPrefs.getFriendData()!=null){
-				return userPrefs.getFriendData();
-			}
-			else{
-				return new ArrayList<>();
-			}
-		}
+		//ToDo: This returns users as a string, not as user objects.
+		// sharedPrefs has issues with storing objects.
+//		public ArrayList<String> getStoredFriendData(){
+//			if(userPrefs.getFriendData()!=null){
+//				return userPrefs.getFriendData();
+//			}
+//			else{
+//				return new ArrayList<>();
+//			}
+//		}
 
 	}
 	//endregion
@@ -302,25 +260,19 @@ public class PPManager {
 
 	public class FriendsService {
 
-		FriendsService(){
+		ArrayList<User> friendsList;
 
-		}
+		FriendsService(){ }
 
-		public void getFriendsData(Interceptor interceptor){
-            Log.d(" GET_FRIENDS","========================1");
+		public ArrayList<User> getFriendsData(Interceptor interceptor){
 			Call<ArrayList<User>> friendsCall = getApi(interceptor).getFriends(devPrefs.getClientAccessToken());
-            Log.d(" GET_FRIENDS","========================2");
 				friendsCall.enqueue(new Callback<ArrayList<User>>() {
 					@Override
 					public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
-                        Log.d(" GET_FRIENDS","========================4");
 						if (response.code() == 200) {
-                            Log.d(" GET_FRIENDS","========================5");
 							System.out.println(response.body());
-//							friendsList = response.body();
-//							for (int i=0;i>=friendsList.size(); i++){
-//								allFriendsHandles.add(friendsList.get(i).getHandle());
-//							}
+							friendsList = response.body();
+							//ToDo: hand back as user object list
 						}
 						else{
 							Log.e(" GET_FRIENDS_ERR","Error getting friends data.");
@@ -334,6 +286,7 @@ public class PPManager {
 						Log.e("GET_FRIENDS_ERR", "Request failed with throwable: " + t);
 					}
 				});
+				return friendsList;
 		}
 
 //		public interface FriendsResponse {
