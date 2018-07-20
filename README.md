@@ -38,7 +38,17 @@ The playPORTAl service requires setting up your app in the playPORTAL.
 
 * ### <b>Step 5:</b> Install the SDK
 
-    * Add dependency ------- to your app level build.gradle
+    * Add the following to your project level build.gradle:
+    ```java
+    repositories {
+        maven{url "https://dynepic.bintray.com/maven"}
+    }
+    ```
+    
+    * Add the following to your app/module level build.gradle:
+    ```java
+    implementation 'com.dynepic.ppsdk_android:ppsdk_android:0.0.0.4@aar'
+    ```
 
 # Using the playPORTAL Manager
 
