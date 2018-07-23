@@ -164,7 +164,7 @@ public class PPManager {
 		public String getClientRefreshToken() {	return devPrefs.getClientRefreshToken(); }
 		public void setClientRefreshToken(String value) { devPrefs.setClientRefreshToken(value); }
 		public void setAppName(String value) { devPrefs.setAppName(value); }
-		public String getAppName() { return devPrefs.getAppName; }
+		public String getAppName() { return devPrefs.getAppName(); }
 
 		public boolean exists(){
 			return devPrefs.exists();
