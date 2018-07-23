@@ -128,12 +128,13 @@ public class PPManager {
 
 
 
-	public void configure(String CLIENT_ID, String CLIENT_SECRET, String REDIRECT_URL, String env) {
+	public void configure(String CLIENT_ID, String CLIENT_SECRET, String REDIRECT_URL, String env, String appName) {
 
-		Log.d("PPManager.Configure","\nConfiguring PPManager:\nID : "+CLIENT_ID+"\nSEC : "+CLIENT_SECRET+"\nREDIR : "+REDIRECT_URL+"\nEnv :"+env);
+		Log.d("PPManager.Configure","\nConfiguring PPManager:\nID : "+CLIENT_ID+"\nSEC : "+CLIENT_SECRET+"\nREDIR : "+REDIRECT_URL+"\nEnv :"+env+"\nApp Name :"+appName);
 		devPrefs.setClientId(CLIENT_ID);
 		devPrefs.setClientSecret(CLIENT_SECRET);
 		devPrefs.setClientRedirect(REDIRECT_URL);
+		devPrefs.setAppName(appName);
 
 		if(env == "PRODUCTION") {
 			devPrefs.setBaseUrl("https://api.playportal.io");
@@ -152,45 +153,18 @@ public class PPManager {
 
 	public class Configuration {
 
-		public String getClientId() {
-			return devPrefs.getClientId();
-		}
-
-		public void setClientId(String value) {
-			devPrefs.setClientId(value);
-		}
-
-		public String getClientSecret() {
-			return devPrefs.getClientSecret();
-		}
-
-		public void setClientSecret(String value) {
-			devPrefs.setClientSecret(value);
-		}
-
-		public String getClientRedirect() {
-			return devPrefs.getClientRedirect();
-		}
-
-		public void setClientRedirect(String value) {
-			devPrefs.setClientRedirect(value);
-		}
-
-		public String getClientAccessToken() {
-			return devPrefs.getClientAccessToken();
-		}
-
-		public void setClientAccessToken(String value) {
-			devPrefs.setClientAccessToken(value);
-		}
-
-		public String getClientRefreshToken() {
-			return devPrefs.getClientRefreshToken();
-		}
-
-		public void setClientRefreshToken(String value) {
-			devPrefs.setClientRefreshToken(value);
-		}
+		public String getClientId() { return devPrefs.getClientId(); }
+		public void setClientId(String value) {	devPrefs.setClientId(value); }
+		public String getClientSecret() { return devPrefs.getClientSecret(); }
+		public void setClientSecret(String value) {	devPrefs.setClientSecret(value); }
+		public String getClientRedirect() {	return devPrefs.getClientRedirect(); }
+		public void setClientRedirect(String value) { devPrefs.setClientRedirect(value); }
+		public String getClientAccessToken() { return devPrefs.getClientAccessToken(); }
+		public void setClientAccessToken(String value) { devPrefs.setClientAccessToken(value); }
+		public String getClientRefreshToken() {	return devPrefs.getClientRefreshToken(); }
+		public void setClientRefreshToken(String value) { devPrefs.setClientRefreshToken(value); }
+		public void setAppName(String value) { devPrefs.setAppName(value); }
+		public String getAppName() { return devPrefs.getAppName; }
 
 		public boolean exists(){
 			return devPrefs.exists();
