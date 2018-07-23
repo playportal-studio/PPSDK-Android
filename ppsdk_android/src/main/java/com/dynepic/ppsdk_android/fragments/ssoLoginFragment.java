@@ -26,6 +26,7 @@ import com.dynepic.ppsdk_android.utils._DevPrefs;
 import com.dynepic.ppsdk_android.utils._DialogFragments;
 
 import java.lang.reflect.Method;
+import java.time.ZonedDateTime;
 import java.util.Objects;
 
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -132,6 +133,14 @@ public class ssoLoginFragment extends DialogFragment {
         devPrefs = new _DevPrefs(CONTEXT);
         devPrefs.setClientAccessToken(accessToken);
         devPrefs.setClientRefreshToken(uri.getQueryParameter("refresh_token"));
+
+        ZonedDateTime date = ZonedDateTime.now();
+        if(uri.getQueryParameter("expires_in") == "1d") {
+            date.plusHours(12);
+		} else {
+			date.plusHours(1);
+		}
+        devPrefs.setTokenExpirationTime(date.toString());
 
         userHandler = new UserHandler(CONTEXT);
 
