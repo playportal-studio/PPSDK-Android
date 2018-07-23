@@ -35,8 +35,7 @@ public class _WebApi {
 
 	private static PPWebApiInterface sPPWebApiInterface;
 
-	public static PPWebApiInterface getApi(Interceptor NetworkInterceptor) {
-		//PPManager ppsdk = new PPManager(CONTEXT);
+	public static PPWebApiInterface getApi(Interceptor NetworkInterceptor, String burl) {
 		//ToDo: logging interceptor for third party?
 
 		if (sPPWebApiInterface == null) {
@@ -49,9 +48,7 @@ public class _WebApi {
 					.setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
 					.create();
 			Retrofit retrofit = new Retrofit.Builder()
-					//ToDo: allow user to pass in either "SANDBOX" or "PRODUCTION", from that derive baseUrl
-					//ToDo: e.g. .baseUrl(env == "SANDBOX ? "https://sandbox.iokids.net" : https://playportal.io");
-					.baseUrl("https://sandbox.iokids.net")
+					.baseUrl(burl)
 					.addConverterFactory(GsonConverterFactory.create(gson))
 					.client(client)
 					.build();
@@ -85,7 +82,7 @@ public class _WebApi {
 
 		// Data / Buckets API calls
 		@PUT("/app/v1/bucket")
-		Call<Bucket> putData(@Body Bucket bucketconfig, @Header("Authorization") String authorization);
+		Call<Bucket> putData(@Body Bucket bucketconfig, @Header("Authorization") String authorization); // create/open bucket
 
 		@GET("/app/v1/bucket")
 		Call<Bucket> readData(@QueryMap Map<String, String> queryparms, @Header("Authorization") String authorization);
