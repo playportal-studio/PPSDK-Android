@@ -81,3 +81,4 @@ freeline_project_description.json
 /app/src/main/res/drawable/ic_dashboard_black_24dp.xml
 /app/src/main/res/drawable/ic_sync_black_24dp.xml
 /app/src/main/res/drawable/ppbutton.xml
+.idea/*
