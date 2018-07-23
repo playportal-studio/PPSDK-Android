@@ -121,20 +121,11 @@ public class _UserPrefs {
         _prefsEditor.apply();
     }
 
-    public String getMyDataStorage() {
-        return _sharedPrefs.getString(myDataStorage, "");
+    public String getMyDataStorage(String appName) {
+        return (handle + "@" + appName);
     }
-    public void setMyDataStorage(String value) {
-        _prefsEditor.putString(myDataStorage, value);
-        _prefsEditor.apply();
-    }
-
-    public String getMyGlobalDataStorage() {
-        return _sharedPrefs.getString(myGlobalDataStorage, "");
-    }
-    public void setMyGlobalDataStorage(String value) {
-        _prefsEditor.putString(myGlobalDataStorage, value);
-        _prefsEditor.apply();
+    public String getMyGlobalDataStorage(String appName) {
+		return("globalAppData" + "@" + appName);
     }
 
     public ArrayList<String> getFriendData(){
