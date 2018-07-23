@@ -114,7 +114,7 @@ public class ssoLoginFragment extends DialogFragment {
         );
 
         _DevPrefs devPrefs = new _DevPrefs(CONTEXT);
-        String pre = "https://sandbox.iokids.net/oauth/signin?client_id=";
+        String pre = devPrefs.getBaseUrl() + "/oauth/signin?client_id=";
         String cid = devPrefs.getClientId();
         String mid = "&redirect_uri=";
         String uri = devPrefs.getClientRedirect();
@@ -131,6 +131,7 @@ public class ssoLoginFragment extends DialogFragment {
         String accessToken = uri.getQueryParameter("access_token");
         devPrefs = new _DevPrefs(CONTEXT);
         devPrefs.setClientAccessToken(accessToken);
+        devPrefs.setClientRefreshToken(uri.getQueryParameter("refresh_token"));
 
         userHandler = new UserHandler(CONTEXT);
 
@@ -145,7 +146,7 @@ public class ssoLoginFragment extends DialogFragment {
 
         //region Call User Data
         HttpLoggingInterceptor inc = new HttpLoggingInterceptor();
-        Call<User> call = getApi(inc).getUser(btoken);
+        Call<User> call = getApi(inc, devPrefs.getBaseUrl()).getUser(btoken);
         call.enqueue(new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
