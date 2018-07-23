@@ -125,11 +125,21 @@ public class PPManager {
 	}
 
 	//region Configuration
-	public void configure(String CLIENT_ID, String CLIENT_SECRET, String REDIRECT_URL) {
-		Log.d("PPManager.Configure","\nConfiguring PPManager:\nID : "+CLIENT_ID+"\nSEC : "+CLIENT_SECRET+"\nREDIR : "+REDIRECT_URL);
+
+
+
+	public void configure(String CLIENT_ID, String CLIENT_SECRET, String REDIRECT_URL, String env) {
+
+		Log.d("PPManager.Configure","\nConfiguring PPManager:\nID : "+CLIENT_ID+"\nSEC : "+CLIENT_SECRET+"\nREDIR : "+REDIRECT_URL+"\nEnv :"+env);
 		devPrefs.setClientId(CLIENT_ID);
 		devPrefs.setClientSecret(CLIENT_SECRET);
 		devPrefs.setClientRedirect(REDIRECT_URL);
+
+		if(env == "PRODUCTION") {
+			devPrefs.setBaseUrl("https://api.playportal.io");
+		} else {
+			devPrefs.setBaseUrl("https://sandbox.iokids.net");
+		}
     }
 
     public Boolean isConfigured(){
@@ -172,6 +182,14 @@ public class PPManager {
 
 		public void setClientAccessToken(String value) {
 			devPrefs.setClientAccessToken(value);
+		}
+
+		public String getClientRefreshToken() {
+			return devPrefs.getClientRefreshToken();
+		}
+
+		public void setClientRefreshToken(String value) {
+			devPrefs.setClientRefreshToken(value);
 		}
 
 		public boolean exists(){
@@ -265,7 +283,7 @@ public class PPManager {
 		FriendsService(){ }
 
 		public ArrayList<User> getFriendsData(Interceptor interceptor){
-			Call<ArrayList<User>> friendsCall = getApi(interceptor).getFriends(devPrefs.getClientAccessToken());
+			Call<ArrayList<User>> friendsCall = getApi(interceptor, devPrefs.getBaseUrl()).getFriends(devPrefs.getClientAccessToken());
 				friendsCall.enqueue(new Callback<ArrayList<User>>() {
 					@Override
 					public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
