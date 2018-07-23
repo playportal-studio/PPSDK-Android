@@ -49,6 +49,8 @@ public class _WebApi {
 					.setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
 					.create();
 			Retrofit retrofit = new Retrofit.Builder()
+					//ToDo: allow user to pass in either "SANDBOX" or "PRODUCTION", from that derive baseUrl
+					//ToDo: e.g. .baseUrl(env == "SANDBOX ? "https://sandbox.iokids.net" : https://playportal.io");
 					.baseUrl("https://sandbox.iokids.net")
 					.addConverterFactory(GsonConverterFactory.create(gson))
 					.client(client)

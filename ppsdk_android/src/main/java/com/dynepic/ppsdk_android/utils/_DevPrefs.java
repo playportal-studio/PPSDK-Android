@@ -12,8 +12,10 @@ public class _DevPrefs {
     private String CLIENT_ID = "CLIENT_ID";
     private String CLIENT_SEC = "CLIENT_SEC";
     private String CLIENT_REDIRECT = "CLIENT_REDIRECT";
+    private String ENVIRONMENT = "ENVIRONMENT";
     private String CLIENT_ACCESS = "CLIENT_ACCESS";
-
+    private String CLIENT_REFRESH = "CLIENT_REFRESH";
+    private String TOKEN_EXPIRATION_TIME = "TOKEN_EXPIRATION_TIME";
 
     @SuppressLint("CommitPrefEdits")
     public _DevPrefs(Context context) {
@@ -48,12 +50,39 @@ public class _DevPrefs {
         _prefsEditor.apply();
     }
 
+    public String getBaseUrl() {
+        return _sharedPrefs.getString(ENVIRONMENT, "https://sandbox.iokids.net");
+    }
+
+    public void setBaseUrl(String value) {
+        _prefsEditor.putString(ENVIRONMENT, value);
+        _prefsEditor.apply();
+    }
+
     public String getClientAccessToken() {
         return _sharedPrefs.getString(CLIENT_ACCESS, "");
     }
 
     public void setClientAccessToken(String value) {
         _prefsEditor.putString(CLIENT_ACCESS, value);
+        _prefsEditor.apply();
+    }
+
+    public String getClientRefreshToken() {
+        return _sharedPrefs.getString(CLIENT_REFRESH, "");
+    }
+
+    public void setClientRefreshToken(String value) {
+        _prefsEditor.putString(CLIENT_REFRESH, value);
+        _prefsEditor.apply();
+    }
+
+    public String getTokenExpirationTime() {
+        return _sharedPrefs.getString(TOKEN_EXPIRATION_TIME, "");
+    }
+
+    public void setTokenExpirationTime(String value) {
+        _prefsEditor.putString(TOKEN_EXPIRATION_TIME, value);
         _prefsEditor.apply();
     }
 
