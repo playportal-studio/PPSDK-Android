@@ -120,7 +120,7 @@ public class PPManager {
 	private _DevPrefs devPrefs;
 	private _UserPrefs userPrefs;
 
-	public PPManager(Context context, Activity activity){
+	public PPManager(Context context, Activity activity) {
 		CONTEXT = context;
 		ACTIVITY = activity;
 		devPrefs = new _DevPrefs(CONTEXT);
@@ -130,66 +130,143 @@ public class PPManager {
 	//region Configuration
 
 
-
 	public void configure(String CLIENT_ID, String CLIENT_SECRET, String REDIRECT_URL, String env, String appName) {
 
-		Log.d("PPManager.Configure","\nConfiguring PPManager:\nID : "+CLIENT_ID+"\nSEC : "+CLIENT_SECRET+"\nREDIR : "+REDIRECT_URL+"\nEnv :"+env+"\nApp Name :"+appName);
+		Log.d("PPManager.Configure", "\nConfiguring PPManager:\nID : " + CLIENT_ID + "\nSEC : " + CLIENT_SECRET + "\nREDIR : " + REDIRECT_URL + "\nEnv :" + env + "\nApp Name :" + appName);
 		devPrefs.setClientId(CLIENT_ID);
 		devPrefs.setClientSecret(CLIENT_SECRET);
 		devPrefs.setClientRedirect(REDIRECT_URL);
 		devPrefs.setAppName(appName);
 
-		if(env == "PRODUCTION") {
+		if (env == "PRODUCTION") {
 			devPrefs.setBaseUrl("https://api.playportal.io");
 		} else {
 			devPrefs.setBaseUrl("https://sandbox.iokids.net");
 		}
-    }
+	}
 
-    public Boolean isConfigured(){
+	public Boolean isConfigured() {
 		return devPrefs.exists();
 	}
 
-	public Configuration getConfiguration(){
+	public Configuration getConfiguration() {
 		return new Configuration();
 	}
 
 	public class Configuration {
 
-		public String getClientId() { return devPrefs.getClientId(); }
-		public void setClientId(String value) {	devPrefs.setClientId(value); }
-		public String getClientSecret() { return devPrefs.getClientSecret(); }
-		public void setClientSecret(String value) {	devPrefs.setClientSecret(value); }
-		public String getClientRedirect() {	return devPrefs.getClientRedirect(); }
-		public void setClientRedirect(String value) { devPrefs.setClientRedirect(value); }
-		public String getClientAccessToken() { return devPrefs.getClientAccessToken(); }
-		public void setClientAccessToken(String value) { devPrefs.setClientAccessToken(value); }
-		public String getClientRefreshToken() {	return devPrefs.getClientRefreshToken(); }
-		public void setClientRefreshToken(String value) { devPrefs.setClientRefreshToken(value); }
-		public void setAppName(String value) { devPrefs.setAppName(value); }
-		public String getAppName() { return devPrefs.getAppName(); }
-		public boolean exists(){ return devPrefs.exists(); }
-		public void clear(){ devPrefs.clear(); }
+		public String getClientId() {
+			return devPrefs.getClientId();
+		}
+
+		public void setClientId(String value) {
+			devPrefs.setClientId(value);
+		}
+
+		public String getClientSecret() {
+			return devPrefs.getClientSecret();
+		}
+
+		public void setClientSecret(String value) {
+			devPrefs.setClientSecret(value);
+		}
+
+		public String getClientRedirect() {
+			return devPrefs.getClientRedirect();
+		}
+
+		public void setClientRedirect(String value) {
+			devPrefs.setClientRedirect(value);
+		}
+
+		public String getClientAccessToken() {
+			return devPrefs.getClientAccessToken();
+		}
+
+		public void setClientAccessToken(String value) {
+			devPrefs.setClientAccessToken(value);
+		}
+
+		public String getClientRefreshToken() {
+			return devPrefs.getClientRefreshToken();
+		}
+
+		public void setClientRefreshToken(String value) {
+			devPrefs.setClientRefreshToken(value);
+		}
+
+		public void setAppName(String value) {
+			devPrefs.setAppName(value);
+		}
+
+		public String getAppName() {
+			return devPrefs.getAppName();
+		}
+
+		public boolean exists() {
+			return devPrefs.exists();
+		}
+
+		public void clear() {
+			devPrefs.clear();
+		}
 	}
 	//endregion
 
 	//region UserData
-	public UserData getUserData(){ return new UserData(); }
+	public UserData getUserData() {
+		return new UserData();
+	}
 
-	public class UserData{
+	public class UserData {
 
-		public Boolean hasUser(){ return userPrefs.exists(); }
-		public String getAccountType() { return userPrefs.getAccountType();	}
-		public String getCountry() { return userPrefs.getCountry();	}
-		public String getCoverPhoto() {	return userPrefs.getCoverPhoto(); }
-		public String getFirstName() { return userPrefs.getFirstName();	}
-		public String getHandle() {	return userPrefs.getHandle(); }
-		public String getLastName() { return userPrefs.getLastName(); }
-		public String getProfilePic() {	return userPrefs.getProfilePic(); }
-		public String getUserId() {	return userPrefs.getUserId(); }
-		public String getUserType() { return userPrefs.getUserType(); }
-		public String getMyDataStorage() { return userPrefs.getMyDataStorage(devPrefs.getAppName()); }
-		public String getMyGlobalDataStorage() { return userPrefs.getMyGlobalDataStorage(devPrefs.getAppName()); }
+		public Boolean hasUser() {
+			return userPrefs.exists();
+		}
+
+		public String getAccountType() {
+			return userPrefs.getAccountType();
+		}
+
+		public String getCountry() {
+			return userPrefs.getCountry();
+		}
+
+		public String getCoverPhoto() {
+			return userPrefs.getCoverPhoto();
+		}
+
+		public String getFirstName() {
+			return userPrefs.getFirstName();
+		}
+
+		public String getHandle() {
+			return userPrefs.getHandle();
+		}
+
+		public String getLastName() {
+			return userPrefs.getLastName();
+		}
+
+		public String getProfilePic() {
+			return userPrefs.getProfilePic();
+		}
+
+		public String getUserId() {
+			return userPrefs.getUserId();
+		}
+
+		public String getUserType() {
+			return userPrefs.getUserType();
+		}
+
+		public String getMyDataStorage() {
+			return userPrefs.getMyDataStorage(devPrefs.getAppName());
+		}
+
+		public String getMyGlobalDataStorage() {
+			return userPrefs.getMyGlobalDataStorage(devPrefs.getAppName());
+		}
 		//This returns users as a string, not as user objects.
 		// sharedPrefs has issues with storing objects.
 //		public ArrayList<String> getStoredFriendData(){
@@ -204,7 +281,7 @@ public class PPManager {
 	}
 	//endregion
 
-	public FriendsService getFriendsManager(){
+	public FriendsService getFriendsManager() {
 		return new FriendsService();
 	}
 
@@ -212,31 +289,32 @@ public class PPManager {
 
 		ArrayList<User> friendsList;
 
-		FriendsService(){ }
-
-		public ArrayList<User> getFriendsData(Interceptor interceptor){
-			Call<ArrayList<User>> friendsCall = getApi(interceptor, devPrefs.getBaseUrl()).getFriends(devPrefs.getClientAccessToken());
-				friendsCall.enqueue(new Callback<ArrayList<User>>() {
-					@Override
-					public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
-						if (response.code() == 200) {
-							System.out.println(response.body());
-							friendsList = response.body();
-						}
-						else{
-							Log.e(" GET_FRIENDS_ERR","Error getting friends data.");
-							Log.e(" GET_FRIENDS_ERR","Response code is : "+response.code());
-							Log.e(" GET_FRIENDS_ERR","Response message is : "+response.message());
-						}
-					}
-
-					@Override
-					public void onFailure(Call<ArrayList<User>> call, Throwable t) {
-						Log.e("GET_FRIENDS_ERR", "Request failed with throwable: " + t);
-					}
-				});
-				return friendsList;
+		FriendsService() {
 		}
+
+		public ArrayList<User> getFriendsData(Interceptor interceptor) {
+			Call<ArrayList<User>> friendsCall = getApi(interceptor, devPrefs.getBaseUrl()).getFriends(devPrefs.getClientAccessToken());
+			friendsCall.enqueue(new Callback<ArrayList<User>>() {
+				@Override
+				public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
+					if (response.code() == 200) {
+						System.out.println(response.body());
+						friendsList = response.body();
+					} else {
+						Log.e(" GET_FRIENDS_ERR", "Error getting friends data.");
+						Log.e(" GET_FRIENDS_ERR", "Response code is : " + response.code());
+						Log.e(" GET_FRIENDS_ERR", "Response message is : " + response.message());
+					}
+				}
+
+				@Override
+				public void onFailure(Call<ArrayList<User>> call, Throwable t) {
+					Log.e("GET_FRIENDS_ERR", "Request failed with throwable: " + t);
+				}
+			});
+			return friendsList;
+		}
+	}
 
 //		public interface FriendsResponse {
 //			void onFriendsResponse(ArrayList<String> output);
@@ -293,43 +371,37 @@ public class PPManager {
 //			}
 //		}
 
-	}
-	public void showSSOLogin(Intent intent){
-		Log.d("PPManager.showSSOLogin","Launching playPORTAL SSO...");
-		ssoLoginFragment ssoLoginFragment = new ssoLoginFragment();
-		ssoLoginFragment.setNextActivity(intent);
-		_DialogFragments.showDialogFragment(ACTIVITY, ssoLoginFragment, true, "SSO");
-	}
 
 
-	private _DataService utilDataService = new _DataService();
 
-	public DataService getDataManager() {
-		return new DataService();
-	}
+	public class DataService {
+		DataService() {};
 
-	public _DataService appDataService = new _DataService();
+		private _DataService appDataService = new _DataService();
 
-
-	public Class DataService {
-		public void DataService(){ }
-
-		public void readData(String bucketName, String key)  {
-			Log.d("DataService readData bucket:" + bucketName + " key:" + key);
-
+		public void readData(String bucketname, String key, _CallbackFunction cb)  {
+			Log.d("DataService readData bucket:", bucketname + " key:" + key);
+			appDataService.readBucket(bucketname, key, cb, CONTEXT);
 		}
 
-		public void writeData(String bucketName, String key, String value) {
-			utilDataService((bucketName, key, value, CONTEXT)
+		public void writeData(String bucketname, String key, String value, _CallbackFunction cb ) {
+			appDataService.writeBucket(bucketname, key, value, false, cb, CONTEXT);
 	}
 
-		public void createBucket(String bucketName, ArrayList<String> bucketUsers, Boolean isPublic, _CallbackFunction cb, Context CONTEXT) {
+		public void createBucket(String bucketname, ArrayList<String> bucketUsers, Boolean isPublic, _CallbackFunction cb, Context CONTEXT) {
 
 			}
 	}
 
+	private void BucketDataService() {
+	}
 
 
-
+	public void showSSOLogin(Intent intent) {
+		Log.d("PPManager.showSSOLogin", "Launching playPORTAL SSO...");
+		ssoLoginFragment ssoLoginFragment = new ssoLoginFragment();
+		ssoLoginFragment.setNextActivity(intent);
+		_DialogFragments.showDialogFragment(ACTIVITY, ssoLoginFragment, true, "SSO");
+	}
 
 }
