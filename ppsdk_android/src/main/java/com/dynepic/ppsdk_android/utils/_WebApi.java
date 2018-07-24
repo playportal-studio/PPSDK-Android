@@ -20,7 +20,7 @@ import java.util.Map;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
+//import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,6 +34,8 @@ import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
+import retrofit2.Response;
+
 
 public class _WebApi {
 	private static _DevPrefs devPrefs;
@@ -164,15 +166,13 @@ public class _WebApi {
 			@Override
 			public void onResponse(Call<Tokens> call, Response<Tokens> response) {
 				if(response.code() == 200) {
-//					Tokens tokens = response.body();
-					tokens = extractAndSaveTokens(tokens, response.body());
+					Tokens tokens = response.body();
+					extractAndSaveTokens(tokens);
 					Log.d("refreshAccessToken res: ", String.valueOf(response.body()));
 					refreshInProgress = false;
-					return true;
 				} else {
 					Log.e("Error", "refreshingAccessToken");
 					refreshInProgress = false;
-					return false;
 				}
 			}
 
@@ -180,16 +180,13 @@ public class _WebApi {
 			public void onFailure(Call<Tokens> call, Throwable t) {
 				Log.e("refreshAccessToken error:", "failed with " + t);
 				refreshInProgress = false;
-				return false;
 			}
 		});
-
-
-
+		return true;
     }
 
-    public void extractAndSaveTokens(Okhttp3.ResponseBody responseBody) {
-    	Log.d("extractAndSaveTokens:", responseBody);
+    public void extractAndSaveTokens(Tokens tokens) {
+    	Log.d("extractAndSaveTokens:", tokens.toString());
 		String expires_in = tokens.getExpiresIn();
 		ZonedDateTime date = ZonedDateTime.now();
 		if (expires_in == "1d") {
