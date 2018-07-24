@@ -86,6 +86,12 @@ public class _DevPrefs {
         _prefsEditor.apply();
     }
 
+    public void setAuthParms(String at, String rt, String t) {
+        setClientAccessToken(at);
+        setClientRefreshToken(rt);
+        setTokenExpirationTime(t);
+    }
+
     public boolean exists(){
         String USER = _sharedPrefs.getString(CLIENT_ID, "");
         String KEY = _sharedPrefs.getString(CLIENT_SEC, "");
