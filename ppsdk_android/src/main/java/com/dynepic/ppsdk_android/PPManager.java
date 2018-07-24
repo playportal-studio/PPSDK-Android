@@ -4,13 +4,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.dynepic.ppsdk_android.fragments.ssoLoginFragment;
 import com.dynepic.ppsdk_android.models.User;
+import com.dynepic.ppsdk_android.utils._DataService;
 import com.dynepic.ppsdk_android.utils._DevPrefs;
 import com.dynepic.ppsdk_android.utils._DialogFragments;
 import com.dynepic.ppsdk_android.utils._UserPrefs;
+import com.dynepic.ppsdk_android.utils._Utils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -21,7 +24,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
-
+import com.dynepic.ppsdk_android.utils._CallbackFunction;
 
 /**
  * This class should handle most of the activity within the app.
@@ -165,73 +168,28 @@ public class PPManager {
 		public void setClientRefreshToken(String value) { devPrefs.setClientRefreshToken(value); }
 		public void setAppName(String value) { devPrefs.setAppName(value); }
 		public String getAppName() { return devPrefs.getAppName(); }
-
-		public boolean exists(){
-			return devPrefs.exists();
-		}
-
-		public void clear(){
-			devPrefs.clear();
-		}
-
+		public boolean exists(){ return devPrefs.exists(); }
+		public void clear(){ devPrefs.clear(); }
 	}
 	//endregion
 
 	//region UserData
-	public UserData getUserData(){
-		return new UserData();
-	}
+	public UserData getUserData(){ return new UserData(); }
 
 	public class UserData{
 
-		public Boolean hasUser(){
-			return userPrefs.exists();
-		}
-
-		public String getAccountType() {
-			return userPrefs.getAccountType();
-		}
-
-		public String getCountry() {
-			return userPrefs.getCountry();
-		}
-
-		public String getCoverPhoto() {
-			return userPrefs.getCoverPhoto();
-		}
-
-		public String getFirstName() {
-			return userPrefs.getFirstName();
-		}
-
-		public String getHandle() {
-			return userPrefs.getHandle();
-		}
-
-		public String getLastName() {
-			return userPrefs.getLastName();
-		}
-
-		public String getProfilePic() {
-			return userPrefs.getProfilePic();
-		}
-
-		public String getUserId() {
-			return userPrefs.getUserId();
-		}
-
-		public String getUserType() {
-			return userPrefs.getUserType();
-		}
-
-		public String getMyDataStorage() {
-			return userPrefs.getMyDataStorage();
-		}
-
-		public String getMyGlobalDataStorage() {
-			return userPrefs.getMyGlobalDataStorage();
-		}
-
+		public Boolean hasUser(){ return userPrefs.exists(); }
+		public String getAccountType() { return userPrefs.getAccountType();	}
+		public String getCountry() { return userPrefs.getCountry();	}
+		public String getCoverPhoto() {	return userPrefs.getCoverPhoto(); }
+		public String getFirstName() { return userPrefs.getFirstName();	}
+		public String getHandle() {	return userPrefs.getHandle(); }
+		public String getLastName() { return userPrefs.getLastName(); }
+		public String getProfilePic() {	return userPrefs.getProfilePic(); }
+		public String getUserId() {	return userPrefs.getUserId(); }
+		public String getUserType() { return userPrefs.getUserType(); }
+		public String getMyDataStorage() { return userPrefs.getMyDataStorage(devPrefs.getAppName()); }
+		public String getMyGlobalDataStorage() { return userPrefs.getMyGlobalDataStorage(devPrefs.getAppName()); }
 		//This returns users as a string, not as user objects.
 		// sharedPrefs has issues with storing objects.
 //		public ArrayList<String> getStoredFriendData(){
@@ -336,7 +294,6 @@ public class PPManager {
 //		}
 
 	}
-
 	public void showSSOLogin(Intent intent){
 		Log.d("PPManager.showSSOLogin","Launching playPORTAL SSO...");
 		ssoLoginFragment ssoLoginFragment = new ssoLoginFragment();
@@ -344,22 +301,32 @@ public class PPManager {
 		_DialogFragments.showDialogFragment(ACTIVITY, ssoLoginFragment, true, "SSO");
 	}
 
-	public void getUserBuckets(){
 
+	private _DataService utilDataService = new _DataService();
+
+	public DataService getDataManager() {
+		return new DataService();
 	}
 
-	public void getGlobalBucket(){
+	public _DataService appDataService = new _DataService();
 
+
+	public Class DataService {
+		public void DataService(){ }
+
+		public void readData(String bucketName, String key)  {
+			Log.d("DataService readData bucket:" + bucketName + " key:" + key);
+
+		}
+
+		public void writeData(String bucketName, String key, String value) {
+			utilDataService((bucketName, key, value, CONTEXT)
 	}
 
-	public void setUserBucket(){
+		public void createBucket(String bucketName, ArrayList<String> bucketUsers, Boolean isPublic, _CallbackFunction cb, Context CONTEXT) {
 
+			}
 	}
-
-	public void setGlobalBucket(){
-
-	}
-
 
 
 
