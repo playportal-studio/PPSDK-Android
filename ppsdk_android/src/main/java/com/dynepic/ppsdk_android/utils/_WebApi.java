@@ -109,7 +109,30 @@ public class _WebApi {
 
 	// Refresh / Access JWT mgt
 
-	public interface PPOauthService {
+	private static PPOauthInterface sPPOauthInterface;
+
+	public static PPOauthInterface getOauthApi(@Nullable Interceptor NetworkInterceptor, String burl) {
+		//ToDo: logging interceptor for third party?
+
+		if (sPPOauthInterface == null) {
+//			NetworkInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+			OkHttpClient client = new OkHttpClient.Builder()
+					.addNetworkInterceptor(NetworkInterceptor)
+					.build();
+			Gson gson = new GsonBuilder()
+					.setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
+					.create();
+			Retrofit retrofit = new Retrofit.Builder()
+					.baseUrl(burl)
+					.addConverterFactory(GsonConverterFactory.create(gson))
+					.client(client)
+					.build();
+
+			sPPOauthInterface = retrofit.create(PPOauthInterface.class);
+		}
+		return sPPOauthInterface;
+	}
+	public interface PPOauthInterface {
 		@Headers({
 				"Accept: application/json",
 				"Content-Type: application/json"
@@ -127,40 +150,29 @@ public class _WebApi {
 			refreshInProgress = true;
 		}
 		_WebApi webApi = new _WebApi();
-		Map<String, String> queryparms = new HashMap<String, String>();
-		queryparms.put("client_id", webApi.getDevPrefs().getClientId());
-		queryparms.put("client_secret", webApi.getDevPrefs().getClientSecret());
-		queryparms.put("refresh_token", webApi.getDevPrefs().getClientRefreshToken());
-		queryparms.put("grant_type", "refresh_token");
-		Log.d("refreshAccessToken parms: ", queryparms.toString());
 
-		Gson gson = new GsonBuilder()
-				.setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
-				.create();
+		Map<String, String> queryparms = new HashMap<String, String>()
+		{{
+				put("client_id", webApi.getDevPrefs().getClientId());
+				put("client_secret", webApi.getDevPrefs().getClientSecret());
+				put("refresh_token", webApi.getDevPrefs().getClientRefreshToken());
+				put("grant_type", "refresh_token");
+			}};
 
-		Retrofit retrofit = new Retrofit.Builder()
-				.baseUrl(webApi.getDevPrefs().getBaseUrl() + "/oauth/")
-				.addConverterFactory(GsonConverterFactory.create(gson))
-				.build();
-
-		PPOauthService authService = retrofit.create(PPOauthService.class);
-		Call<Tokens> call = authService.getTokens(queryparms);
-		Log.d("queryparms: ", queryparms.toString());
-
+		Call<Tokens> call = getOauthApi(null, webApi.getDevPrefs().getBaseUrl()).getTokens(queryparms);
 		call.enqueue(new Callback<Tokens>() {
-
 			@Override
 			public void onResponse(Call<Tokens> call, Response<Tokens> response) {
-				int statusCode = response.code();
-				Log.d("status: ", String.valueOf(statusCode));
-				if (statusCode == 200) {
-					Tokens tokens = response.body();
+				if(response.code() == 200) {
+//					Tokens tokens = response.body();
 					tokens = extractAndSaveTokens(tokens, response.body());
 					Log.d("refreshAccessToken res: ", String.valueOf(response.body()));
 					refreshInProgress = false;
+					return true;
 				} else {
 					Log.e("Error", "refreshingAccessToken");
 					refreshInProgress = false;
+					return false;
 				}
 			}
 
@@ -168,10 +180,11 @@ public class _WebApi {
 			public void onFailure(Call<Tokens> call, Throwable t) {
 				Log.e("refreshAccessToken error:", "failed with " + t);
 				refreshInProgress = false;
+				return false;
 			}
 		});
 
-		return true;
+
 
     }
 
