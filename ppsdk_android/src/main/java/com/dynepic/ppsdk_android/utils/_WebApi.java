@@ -168,7 +168,7 @@ public class _WebApi {
 				if(response.code() == 200) {
 					Tokens tokens = response.body();
 					extractAndSaveTokens(tokens);
-					Log.d("refreshAccessToken res: ", String.valueOf(response.body()));
+					Log.d("refresh token res: ", String.valueOf(response.body()));
 					refreshInProgress = false;
 				} else {
 					Log.e("Error", "refreshingAccessToken");
@@ -178,7 +178,7 @@ public class _WebApi {
 
 			@Override
 			public void onFailure(Call<Tokens> call, Throwable t) {
-				Log.e("refreshAccessToken error:", "failed with " + t);
+				Log.e("refresh token error:", "failed with " + t);
 				refreshInProgress = false;
 			}
 		});
@@ -199,4 +199,3 @@ public class _WebApi {
 
 		}
 	}
-}
