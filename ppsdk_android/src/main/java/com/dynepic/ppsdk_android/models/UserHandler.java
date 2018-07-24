@@ -23,12 +23,12 @@ public class UserHandler {
 	private _UserPrefs userPrefs;
 	private Context CONTEXT;
 
-	public UserHandler(Context context){
+	public UserHandler(Context context) {
 		CONTEXT = context;
 		setUserPrefs(CONTEXT);
 	}
 
-	public void populateUserData(User userObject){
+	public void populateUserData(User userObject) {
 		setUserPrefs(CONTEXT);
 		setHandle(userObject.getHandle());
 		setFirstName(userObject.getFirstName());
@@ -38,13 +38,11 @@ public class UserHandler {
 		setAccountType(userObject.getAccountType());
 		setCoverPhoto(userObject.getCoverPhoto());
 		setProfilePic(userObject.getProfilePic());
-		setMyDataStorage(userObject.getMyDataStorage());
-		setMyGlobalDataStorage(userObject.getMyGlobalDataStorage());
 		setCountry(userObject.getCountry());
 	}
 
 	//region Getters and Setters
-	private void setUserPrefs(Context context){
+	private void setUserPrefs(Context context) {
 		userPrefs = new _UserPrefs(context);
 	}
 
@@ -120,21 +118,12 @@ public class UserHandler {
 		userPrefs.setUserType(userType);
 	}
 
-	public String getMyDataStorage() {
-		return userPrefs.getMyDataStorage();
+	public String getMyDataStorage(String appName) {
+		return userPrefs.getMyDataStorage(appName);
 	}
 
-	public void setMyDataStorage(String myDataStorage) {
-		userPrefs.setMyDataStorage(myDataStorage);
-	}
+	public String getMyGlobalDataStorage(String appName) { return userPrefs.getMyGlobalDataStorage(appName); }
 
-	public String getMyGlobalDataStorage() {
-		return userPrefs.getMyGlobalDataStorage();
-	}
-
-	public void setMyGlobalDataStorage(String myGlobalDataStorage) {
-		userPrefs.setMyGlobalDataStorage(myGlobalDataStorage);
-	}
 
 
 	//endregion
