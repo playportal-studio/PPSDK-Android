@@ -1,7 +1,14 @@
 package com.dynepic.ppsdk_android.utils;
 
+
 import android.content.Context;
 import android.util.Log;
+
+import com.dynepic.ppsdk_android.models.Bucket;
+import com.dynepic.ppsdk_android.utils._CallbackFunction;
+import com.google.gson.JsonObject;
+
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,18 +17,14 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-
-import com.dynepic.ppsdk_android.models.Bucket;
-import com.dynepic.ppsdk_android.utils._CallbackFunction;
-import com.dynepic.ppsdk_android.utils._DevPrefs;
 import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
 
 
 public class _DataService {
 
-	public void createBucket(String bucketName, ArrayList<String> bucketUsers, Boolean isPublic, _CallbackFunction cb, Context CONTEXT) {
+	public void createBucket(String bucketName, ArrayList<String> bucketUsers, Boolean isPublic, Context CONTEXT, _CallbackFunction._Data cb) {
 
-		_DevPrefs devPrefs = new _DevPrefs(CONTEXT);
+		com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
 
 		if(bucketName != null) {
 			String btoken = "Bearer " + devPrefs.getClientAccessToken();
@@ -30,31 +33,31 @@ public class _DataService {
 			bucketconfig.setId(bucketName);
 			bucketconfig.setUsers(bucketUsers);
 			bucketconfig.setData(new HashMap<>());
-			Call<Bucket> call = getApi(null, devPrefs.getBaseUrl()).putData(bucketconfig, btoken);
+			Call<Bucket> call = getApi(devPrefs.getBaseUrl()).putData(bucketconfig, btoken);
 
 			call.enqueue(new Callback<Bucket>() {
 				@Override
 				public void onResponse(Call<Bucket> call, Response<Bucket> response) {
 					if((response.code() == 200) || (response.code() == 409))
 						Log.d("createBucket response: ", String.valueOf(response.body()));
-						cb.cbf(bucketName, null, null, null);
-					}
+					cb.f(bucketName, null, null, null);
+				}
 				@Override
 				public void onFailure(Call<Bucket> call, Throwable t) {
 					Log.e("createBucket error:", "failed with " + t);
-					cb.cbf(bucketName, null, null, "Error: failed to create bucket");
+					cb.f(bucketName, null, null, t.getMessage());
 				}
 			});
 		}
-		cb.cbf(bucketName, null, null, "Error: failed to create bucket");
+		cb.f(bucketName, null, null, "Error: failed to create bucket");
 	}
 
 
-	public void readBucket(String bucketName, String key, _CallbackFunction cb, Context CONTEXT)
+	public void readBucket(String bucketName, String key, Context CONTEXT, _CallbackFunction._Data cb)
 	{
 		Log.d("readBucket: ", bucketName + " and key:" + key);
 		Boolean readSuccess = true;
-		_DevPrefs devPrefs = new _DevPrefs(CONTEXT);
+		com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
 
 		if(bucketName != null) {
 			String btoken = "Bearer " + devPrefs.getClientAccessToken();
@@ -62,20 +65,24 @@ public class _DataService {
 			Map<String, String> queryparms = new HashMap<>();
 			queryparms.put("id", bucketName);
 			if(key != null) { queryparms.put("key", key); }
-			Call<Bucket> call = getApi(null, devPrefs.getBaseUrl()).readData(queryparms, btoken);
-			call.enqueue(new Callback<Bucket>() {
+			Call<JsonObject> call = getApi(devPrefs.getBaseUrl()).readData(queryparms, btoken);
+			call.enqueue(new Callback<JsonObject>() {
 				@Override
-				public void onResponse(Call<Bucket> call, Response<Bucket> response) {
+				public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
 					if(response.code() == 200) {
-						Bucket bucket = response.body();
-						HashMap<String, String> bucketData = bucket != null ? bucket.getData() : null;
-						cb.cbf(bucketName, key, bucketData.get(key).toString(), null);
+						try {
+							JsonObject jdata = response.body().getAsJsonObject("data");
+							Log.d("value@key: ", key + " : "+ jdata.get(key).toString());
+							cb.f(bucketName, key, jdata.getAsJsonObject(key), null);
+						} catch(Exception e) {
+							cb.f(bucketName, key, null, "Key: "+key+" not found in bucket:"+bucketName+"  Err:"+e.getMessage());
+						}
 					}
 				}
 				@Override
-				public void onFailure(Call<Bucket> call, Throwable t) {
+				public void onFailure(Call<JsonObject> call, Throwable t) {
 					Log.e("readBucket error:", "failed with " + t + " on bucket:" + bucketName);
-					cb.cbf(bucketName, key, null, t.getMessage());
+					cb.f(bucketName, key, null, t.getMessage());
 				}
 			});
 		}
@@ -84,42 +91,38 @@ public class _DataService {
 
 
 
-	public void writeBucket(String bucketName, String key, String value, Boolean push, _CallbackFunction cb, Context CONTEXT) {
+	public void writeBucket(String bucketName, String key, JsonObject value, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
 		Log.d("writeBucket", "bucket: " + bucketName + " key:" + key + " value:" + value);
 		if (bucketName != null && key != null && value != null) {
-			_DevPrefs devPrefs = new _DevPrefs(CONTEXT);
+			com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
 			String btoken = "Bearer " + devPrefs.getClientAccessToken();
-			HashMap<String, String> body = new HashMap<String, String>()
-				{{
-					put(key, value);
-					put("id", bucketName);
-					put("key", key);
-					put("value", value);
-					put("access_token", btoken);
-				}};
+			JsonObject body = new JsonObject();
+			body.addProperty("key", key);
+			body.add("value", value);
+			body.addProperty("id", bucketName);
+			body.addProperty("access_token", btoken);
 
-			Call<Bucket> call = getApi(null, devPrefs.getBaseUrl()).writeData(body, btoken);
+			Call<JsonObject> call = getApi(devPrefs.getBaseUrl()).writeData(body, btoken);
 			Log.d("write body: ", body.toString());
-			call.enqueue(new Callback<Bucket>() {
+			call.enqueue(new Callback<JsonObject>() {
 				@Override
-				public void onResponse(Call<Bucket> call, Response<Bucket> response) {
+				public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
 					if(response.code() == 200) {
-						Bucket bucket = response.body();
+						JsonObject jdata = response.body().getAsJsonObject("data");
 						Log.d("writeBucket res: ", String.valueOf(response.body()));
-						cb.cbf(bucketName, key, value, null);
+						cb.f(bucketName, key, value, null);
 					}
 				}
 
 				@Override
-				public void onFailure(Call<Bucket> call, Throwable t) {
+				public void onFailure(Call<JsonObject> call, Throwable t) {
 					Log.e("writeBucket error:", "failed with " + t);
-					cb.cbf(bucketName, key, value, "Error: bucket write failed");
+					cb.f(bucketName, key, value, t.getMessage());
 				}
 			});
 		} else {
-			cb.cbf(bucketName, key, value, "Error: bucket write failed");
+			cb.f(bucketName, key, value, "Error: bucket write failed - invalid parms!");
 		}
 	}
 
 }
-
