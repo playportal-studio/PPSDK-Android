@@ -1,21 +1,21 @@
 package com.dynepic.ppsdk_android;
 
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.dynepic.ppsdk_android.fragments.ssoLoginFragment;
 import com.dynepic.ppsdk_android.models.User;
+import com.dynepic.ppsdk_android.utils._CallbackFunction;
 import com.dynepic.ppsdk_android.utils._DataService;
 import com.dynepic.ppsdk_android.utils._DevPrefs;
 import com.dynepic.ppsdk_android.utils._DialogFragments;
 import com.dynepic.ppsdk_android.utils._UserPrefs;
-import com.dynepic.ppsdk_android.utils._Utils;
+import com.google.gson.JsonObject;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 import okhttp3.Interceptor;
@@ -24,7 +24,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
-import com.dynepic.ppsdk_android.utils._CallbackFunction;
 
 /**
  * This class should handle most of the activity within the app.
@@ -106,7 +105,7 @@ import com.dynepic.ppsdk_android.utils._CallbackFunction;
 
  /@Override
  public void onFriendsResponse(ArrayList<String> output) {
-    //update your UI based on response
+ //update your UI based on response
  }
 
  *
@@ -143,6 +142,8 @@ public class PPManager {
 		} else {
 			devPrefs.setBaseUrl("https://sandbox.iokids.net");
 		}
+
+
 	}
 
 	public Boolean isConfigured() {
@@ -261,11 +262,13 @@ public class PPManager {
 		}
 
 		public String getMyDataStorage() {
-			return userPrefs.getMyDataStorage(devPrefs.getAppName());
+			return userPrefs.getHandle() + "@" + devPrefs.getAppName();
+//			return userPrefs.getMyDataStorage(devPrefs.getAppName());
 		}
 
 		public String getMyGlobalDataStorage() {
-			return userPrefs.getMyGlobalDataStorage(devPrefs.getAppName());
+			return "globalAppData@" + devPrefs.getAppName();
+//			return userPrefs.getMyGlobalDataStorage(devPrefs.getAppName());
 		}
 		//This returns users as a string, not as user objects.
 		// sharedPrefs has issues with storing objects.
@@ -292,14 +295,15 @@ public class PPManager {
 		FriendsService() {
 		}
 
-		public ArrayList<User> getFriendsData(Interceptor interceptor) {
-			Call<ArrayList<User>> friendsCall = getApi(interceptor, devPrefs.getBaseUrl()).getFriends(devPrefs.getClientAccessToken());
+		public ArrayList<User> getFriendsData(_CallbackFunction._Friends cb) {
+			Call<ArrayList<User>> friendsCall = getApi(devPrefs.getBaseUrl()).getFriends(devPrefs.getClientAccessToken());
 			friendsCall.enqueue(new Callback<ArrayList<User>>() {
 				@Override
 				public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
 					if (response.code() == 200) {
 						System.out.println(response.body());
 						friendsList = response.body();
+						cb.f(friendsList, null);
 					} else {
 						Log.e(" GET_FRIENDS_ERR", "Error getting friends data.");
 						Log.e(" GET_FRIENDS_ERR", "Response code is : " + response.code());
@@ -373,24 +377,46 @@ public class PPManager {
 
 
 
-
-	public class DataService {
-		DataService() {};
-
-		private _DataService appDataService = new _DataService();
-
-		public void readData(String bucketname, String key, _CallbackFunction cb)  {
-			Log.d("DataService readData bucket:", bucketname + " key:" + key);
-			appDataService.readBucket(bucketname, key, cb, CONTEXT);
-		}
-
-		public void writeData(String bucketname, String key, String value, _CallbackFunction cb ) {
-			appDataService.writeBucket(bucketname, key, value, false, cb, CONTEXT);
+	private static _DataService appDataService = new _DataService();
+	public DataService getDataManager() {
+		return new DataService();
 	}
 
-		public void createBucket(String bucketname, ArrayList<String> bucketUsers, Boolean isPublic, _CallbackFunction cb, Context CONTEXT) {
+	public class DataService {
 
+		DataService() {
+			if (appDataService == null) {
+				appDataService = new _DataService();
+				appDataService.createBucket(userPrefs.getMyDataStorage(devPrefs.getAppName()), new ArrayList<String>(), false, CONTEXT, (String bucketName, String key, JsonObject value, String error) -> {
+					if (error != null) {
+						Log.e("AppData create error:", error + " for bucket: " + userPrefs.getMyDataStorage(devPrefs.getAppName()));
+					} else {
+						Log.d("Created AppData", userPrefs.getMyDataStorage(devPrefs.getAppName()));
+					}
+				});
+				appDataService.createBucket(userPrefs.getMyGlobalDataStorage(devPrefs.getAppName()), new ArrayList<String>(), true, CONTEXT, (String bucketName, String key, JsonObject value, String error) -> {
+					if (error != null) {
+						Log.e("GlobalAppData create error:", error + " for bucket: " + userPrefs.getMyGlobalDataStorage(devPrefs.getAppName()));
+					} else {
+						Log.d("Created GlobalAppData", userPrefs.getMyGlobalDataStorage(devPrefs.getAppName()));
+					}
+				});
 			}
+		}
+
+		public void readData(String bucketname, String key, _CallbackFunction._Data cb)  {
+			Log.d("DataService readData bucket:", bucketname + " key:" + key);
+			appDataService.readBucket(bucketname, key, CONTEXT, cb);
+		}
+
+		//		public void writeData(String bucketname, String key, String value, _CallbackFunction._Data cb ) {
+		public void writeData(String bucketname, String key, JsonObject value, _CallbackFunction._Data cb ) {
+			appDataService.writeBucket(bucketname, key, value, false, CONTEXT, cb);
+		}
+
+		public void createBucket(String bucketname, ArrayList<String> bucketUsers, Boolean isPublic, _CallbackFunction._Data cb, Context CONTEXT) {
+
+		}
 	}
 
 	private void BucketDataService() {
