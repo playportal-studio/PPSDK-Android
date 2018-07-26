@@ -1,5 +1,6 @@
 package com.dynepic.ppsdk_android.utils;
 
+
 import android.content.Context;
 import android.media.Image;
 import android.support.annotation.Nullable;
@@ -8,8 +9,12 @@ import android.util.Log;
 import com.dynepic.ppsdk_android.models.Bucket;
 import com.dynepic.ppsdk_android.models.Tokens;
 import com.dynepic.ppsdk_android.models.User;
+import com.dynepic.ppsdk_android.utils._DevPrefs;
+
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -20,10 +25,10 @@ import java.util.Map;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-//import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
@@ -34,7 +39,8 @@ import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
-import retrofit2.Response;
+
+//import okhttp3.Response;
 
 
 public class _WebApi {
@@ -46,16 +52,37 @@ public class _WebApi {
 		return devPrefs;
 	}
 
+	private static class customInterceptor implements Interceptor {
+		@Override
+		public okhttp3.Response intercept(Chain chain) throws IOException {
+			Request request = chain.request();
+			okhttp3.Response response = chain.proceed(request);
+
+			if (response.code()!=409 || response.code()!=200){
+				//ToDo: Handle Success
+			}
+			else{
+				//ToDo: Handle Failure, e.g. refresh token and resend request
+			}
+			return response;
+		}
+	}
+
 	private static PPWebApiInterface sPPWebApiInterface;
 
-	public static PPWebApiInterface getApi(@Nullable Interceptor NetworkInterceptor, String burl) {
+	public static PPWebApiInterface getApi(String burl) {
 		//ToDo: logging interceptor for third party?
 
 		if (sPPWebApiInterface == null) {
-//			NetworkInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+//						if(devPrefs.getEnvironment()) {
+			HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+			loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
 			OkHttpClient client = new OkHttpClient.Builder()
-					.addNetworkInterceptor(NetworkInterceptor)
+//					.addNetworkInterceptor(NetworkInterceptor)
+					.addInterceptor(loggingInterceptor)
 					.build();
+
 			Gson gson = new GsonBuilder()
 					.setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
 					.create();
@@ -98,10 +125,10 @@ public class _WebApi {
 		Call<Bucket> putData(@Body Bucket bucketconfig, @Header("Authorization") String authorization); // create/open bucket
 
 		@GET("/app/v1/bucket")
-		Call<Bucket> readData(@QueryMap Map<String, String> queryparms, @Header("Authorization") String authorization);
+		Call<JsonObject> readData(@QueryMap Map<String, String> queryparms, @Header("Authorization") String authorization);
 
 		@POST("app/v1/bucket")
-		Call<Bucket> writeData(@Body Map<String, String> bodyparms, @Header("Authorization") String authorization);
+		Call<JsonObject> writeData(@Body JsonObject bodyparms, @Header("Authorization") String authorization);
 
 		@GET("/user/v1/static/{id}")
 		Call<Image> downloadImage(@Path("id") String imageId, @Header("Authorization") String authorization);
@@ -155,11 +182,11 @@ public class _WebApi {
 
 		Map<String, String> queryparms = new HashMap<String, String>()
 		{{
-				put("client_id", webApi.getDevPrefs().getClientId());
-				put("client_secret", webApi.getDevPrefs().getClientSecret());
-				put("refresh_token", webApi.getDevPrefs().getClientRefreshToken());
-				put("grant_type", "refresh_token");
-			}};
+			put("client_id", webApi.getDevPrefs().getClientId());
+			put("client_secret", webApi.getDevPrefs().getClientSecret());
+			put("refresh_token", webApi.getDevPrefs().getClientRefreshToken());
+			put("grant_type", "refresh_token");
+		}};
 
 		Call<Tokens> call = getOauthApi(null, webApi.getDevPrefs().getBaseUrl()).getTokens(queryparms);
 		call.enqueue(new Callback<Tokens>() {
@@ -183,10 +210,10 @@ public class _WebApi {
 			}
 		});
 		return true;
-    }
+	}
 
-    public void extractAndSaveTokens(Tokens tokens) {
-    	Log.d("extractAndSaveTokens:", tokens.toString());
+	public void extractAndSaveTokens(Tokens tokens) {
+		Log.d("extractAndSaveTokens:", tokens.toString());
 		String expires_in = tokens.getExpiresIn();
 		ZonedDateTime date = ZonedDateTime.now();
 		if (expires_in == "1d") {
@@ -197,5 +224,5 @@ public class _WebApi {
 
 		devPrefs.setAuthParms(tokens.getAccessToken(), tokens.getRefreshToken(), date.toString());
 
-		}
 	}
+}
