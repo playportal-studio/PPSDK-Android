@@ -1,5 +1,6 @@
 package com.dynepic.ppsdk_android.utils;
 
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -81,7 +82,7 @@ public class _DevPrefs {
     }
 
     public String getAppName() { return _sharedPrefs.getString(APP_NAME, "unknown"); }
-        public void setAppName(String value) {
+    public void setAppName(String value) {
         _prefsEditor.putString(APP_NAME, value);
         _prefsEditor.apply();
     }
@@ -97,8 +98,8 @@ public class _DevPrefs {
         String KEY = _sharedPrefs.getString(CLIENT_SEC, "");
         String RED = _sharedPrefs.getString(CLIENT_REDIRECT, "");
         return !USER.isEmpty() || !USER.equalsIgnoreCase("") ||
-               !KEY.isEmpty() || !KEY.equalsIgnoreCase("") ||
-               !RED.isEmpty() || !RED.equalsIgnoreCase("");
+                !KEY.isEmpty() || !KEY.equalsIgnoreCase("") ||
+                !RED.isEmpty() || !RED.equalsIgnoreCase("");
     }
 
     public void clear(){

@@ -1,15 +1,12 @@
 package com.dynepic.ppsdk_android.utils;
 
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
-
-import com.dynepic.ppsdk_android.models.User;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class _UserPrefs {
@@ -30,8 +27,6 @@ public class _UserPrefs {
             profilePic = "profilePic",
             userId = "userId",
             userType = "userType",
-            myDataStorage = "myDataStorage",
-            myGlobalDataStorage = "myGlobalDataStorage",
             friends = "friends";
 
 
@@ -125,7 +120,7 @@ public class _UserPrefs {
         return (handle + "@" + appName);
     }
     public String getMyGlobalDataStorage(String appName) {
-		return("globalAppData" + "@" + appName);
+        return("globalAppData" + "@" + appName);
     }
 
     public ArrayList<String> getFriendData(){
