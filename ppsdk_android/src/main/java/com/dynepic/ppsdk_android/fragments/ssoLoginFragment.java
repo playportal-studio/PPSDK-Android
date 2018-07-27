@@ -154,8 +154,7 @@ public class ssoLoginFragment extends DialogFragment {
         Log.i("SSO_LOGIN", "Requesting User Data");
 
         //region Call User Data
-        HttpLoggingInterceptor inc = new HttpLoggingInterceptor();
-        Call<User> call = getApi(inc, devPrefs.getBaseUrl()).getUser(btoken);
+        Call<User> call = getApi(devPrefs.getBaseUrl()).getUser(btoken);
         call.enqueue(new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
