@@ -38,8 +38,8 @@ public class _DataService {
 			call.enqueue(new Callback<Bucket>() {
 				@Override
 				public void onResponse(Call<Bucket> call, Response<Bucket> response) {
-					if((response.code() == 200) || (response.code() == 409))
-						Log.d("createBucket response: ", String.valueOf(response.body()));
+// 					if((response.code() == 200) || (response.code() == 409))
+					Log.d("createBucket response: ", String.valueOf(response.body()));
 					cb.f(bucketName, null, null, null);
 				}
 				@Override
