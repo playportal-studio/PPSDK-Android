@@ -1,6 +1,5 @@
 package com.dynepic.ppsdk_android.utils;
 
-
 import android.content.Context;
 import android.media.Image;
 import android.support.annotation.Nullable;
@@ -44,12 +43,21 @@ import retrofit2.http.QueryMap;
 
 
 public class _WebApi {
+	private static Boolean refreshedAtStartup = false;
 	private static _DevPrefs devPrefs;
 	private static Context CONTEXT;
 	public void setContext(Context c) { CONTEXT = c; }
 	public _DevPrefs getDevPrefs() {
 		if (devPrefs == null) devPrefs = new _DevPrefs(CONTEXT);
 		return devPrefs;
+	}
+
+	public _WebApi(Context c) {
+		this.setContext(c);
+		if(refreshedAtStartup == true) return;
+		Log.d("_WebApi constructor", "context:"+c);
+		refreshAccessToken();
+		refreshedAtStartup = true;
 	}
 
 	private static class customInterceptor implements Interceptor {
@@ -75,11 +83,10 @@ public class _WebApi {
 
 		if (sPPWebApiInterface == null) {
 //						if(devPrefs.getEnvironment()) {
-			HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-			loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+				HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+				loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
 			OkHttpClient client = new OkHttpClient.Builder()
-//					.addNetworkInterceptor(NetworkInterceptor)
 					.addInterceptor(loggingInterceptor)
 					.build();
 
@@ -140,13 +147,13 @@ public class _WebApi {
 
 	private static PPOauthInterface sPPOauthInterface;
 
-	public static PPOauthInterface getOauthApi(@Nullable Interceptor NetworkInterceptor, String burl) {
-		//ToDo: logging interceptor for third party?
-
+	public static PPOauthInterface getOauthApi(String burl) {
 		if (sPPOauthInterface == null) {
-//			NetworkInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+			HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+			loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
 			OkHttpClient client = new OkHttpClient.Builder()
-					.addNetworkInterceptor(NetworkInterceptor)
+					.addNetworkInterceptor(loggingInterceptor)
 					.build();
 			Gson gson = new GsonBuilder()
 					.setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
@@ -161,34 +168,34 @@ public class _WebApi {
 		}
 		return sPPOauthInterface;
 	}
+
 	public interface PPOauthInterface {
 		@Headers({
 				"Accept: application/json",
 				"Content-Type: application/json"
 		})
-		@POST("token")
+		@POST("oauth/token")
 		Call<Tokens> getTokens(@QueryMap Map<String, String> queryparms);
 	}
 
 	private Boolean refreshInProgress = false;
 
 	public boolean refreshAccessToken() {
-
 		synchronized (refreshInProgress) {
 			if (refreshInProgress) return true;
 			refreshInProgress = true;
 		}
-		_WebApi webApi = new _WebApi();
 
+		Log.d("refreshAccessToken:", getDevPrefs().getClientRefreshToken());
 		Map<String, String> queryparms = new HashMap<String, String>()
 		{{
-			put("client_id", webApi.getDevPrefs().getClientId());
-			put("client_secret", webApi.getDevPrefs().getClientSecret());
-			put("refresh_token", webApi.getDevPrefs().getClientRefreshToken());
-			put("grant_type", "refresh_token");
-		}};
+				put("client_id", getDevPrefs().getClientId());
+				put("client_secret", getDevPrefs().getClientSecret());
+				put("refresh_token", getDevPrefs().getClientRefreshToken());
+				put("grant_type", "refresh_token");
+			}};
 
-		Call<Tokens> call = getOauthApi(null, webApi.getDevPrefs().getBaseUrl()).getTokens(queryparms);
+		Call<Tokens> call = getOauthApi(getDevPrefs().getBaseUrl()).getTokens(queryparms);
 		call.enqueue(new Callback<Tokens>() {
 			@Override
 			public void onResponse(Call<Tokens> call, Response<Tokens> response) {
@@ -196,11 +203,10 @@ public class _WebApi {
 					Tokens tokens = response.body();
 					extractAndSaveTokens(tokens);
 					Log.d("refresh token res: ", String.valueOf(response.body()));
-					refreshInProgress = false;
 				} else {
 					Log.e("Error", "refreshingAccessToken");
-					refreshInProgress = false;
 				}
+				refreshInProgress = false;
 			}
 
 			@Override
@@ -210,13 +216,11 @@ public class _WebApi {
 			}
 		});
 		return true;
-	}
+    }
 
-	public void extractAndSaveTokens(Tokens tokens) {
-		Log.d("extractAndSaveTokens:", tokens.toString());
-		String expires_in = tokens.getExpiresIn();
+    public void extractAndSaveTokens(Tokens tokens) {
 		ZonedDateTime date = ZonedDateTime.now();
-		if (expires_in == "1d") {
+		if (tokens.getExpiresIn() == "1d") {
 			date.plusHours(12);
 		} else {
 			date.plusHours(1);
@@ -224,5 +228,5 @@ public class _WebApi {
 
 		devPrefs.setAuthParms(tokens.getAccessToken(), tokens.getRefreshToken(), date.toString());
 
+		}
 	}
-}
