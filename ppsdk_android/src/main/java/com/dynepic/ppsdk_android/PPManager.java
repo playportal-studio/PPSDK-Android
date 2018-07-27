@@ -1,6 +1,5 @@
 package com.dynepic.ppsdk_android;
 
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +13,8 @@ import com.dynepic.ppsdk_android.utils._DataService;
 import com.dynepic.ppsdk_android.utils._DevPrefs;
 import com.dynepic.ppsdk_android.utils._DialogFragments;
 import com.dynepic.ppsdk_android.utils._UserPrefs;
+import com.dynepic.ppsdk_android.utils._WebApi;
+
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
@@ -105,7 +106,7 @@ import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
 
  /@Override
  public void onFriendsResponse(ArrayList<String> output) {
- //update your UI based on response
+    //update your UI based on response
  }
 
  *
@@ -113,20 +114,22 @@ import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
 
 
 public class PPManager {
-
 	private Context CONTEXT;
 	private Activity ACTIVITY;
 	private _DevPrefs devPrefs;
 	private _UserPrefs userPrefs;
+	private _WebApi webApi;
 
 	public PPManager(Context context, Activity activity) {
 		CONTEXT = context;
 		ACTIVITY = activity;
 		devPrefs = new _DevPrefs(CONTEXT);
 		userPrefs = new _UserPrefs(CONTEXT);
+		webApi  = new _WebApi(context);
 	}
 
 	//region Configuration
+
 
 
 	public void configure(String CLIENT_ID, String CLIENT_SECRET, String REDIRECT_URL, String env, String appName) {
@@ -296,7 +299,7 @@ public class PPManager {
 		}
 
 		public ArrayList<User> getFriendsData(_CallbackFunction._Friends cb) {
-			Call<ArrayList<User>> friendsCall = getApi(devPrefs.getBaseUrl()).getFriends(devPrefs.getClientAccessToken());
+			Call<ArrayList<User>> friendsCall = webApi.getApi(devPrefs.getBaseUrl()).getFriends(devPrefs.getClientAccessToken());
 			friendsCall.enqueue(new Callback<ArrayList<User>>() {
 				@Override
 				public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
@@ -320,64 +323,8 @@ public class PPManager {
 		}
 	}
 
-//		public interface FriendsResponse {
-//			void onFriendsResponse(ArrayList<String> output);
-//		}
-//
-//		public static class getFriends extends AsyncTask<Void, Void, ArrayList<String>> {
-//
-//			public FriendsResponse delegate;
-//			private ArrayList<User> friendsList;
-//			private ArrayList<String> allFriendsHandles;
-//			private final WeakReference<Activity> weakActivity;
-//
-//			public getFriends(Activity activity){
-//				weakActivity = new WeakReference<>(activity);;
-//			}
-//
-//			@Override
-//			protected ArrayList<String> doInBackground(Void... params) {
-//				_DevPrefs devPrefs = new _DevPrefs(weakActivity.get());
-//				allFriendsHandles = new ArrayList<>();
-//				Call<ArrayList<User>> friendsCall = getApi(weakActivity.get()).getFriends(devPrefs.getClientAccessToken());
-//				friendsCall.enqueue(new Callback<ArrayList<User>>() {
-//					@Override
-//					public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
-//						if (response.code() == 200) {
-//							System.out.println(response.body());
-//							friendsList = response.body();
-//							for (int i=0;i>=friendsList.size(); i++){
-//								allFriendsHandles.add(friendsList.get(i).getHandle());
-//							}
-//						}
-//						else{
-//							Log.e(" GET_FRIENDS_ERR","Error getting friends data.");
-//							Log.e(" GET_FRIENDS_ERR","Response code is : "+response.code());
-//							Log.e(" GET_FRIENDS_ERR","Response message is : "+response.message());
-//						}
-//					}
-//
-//					@Override
-//					public void onFailure(Call<ArrayList<User>> call, Throwable t) {
-//						Log.e("GET_FRIENDS_ERR", "Request failed with throwable: " + t);
-//					}
-//				});
-//				return allFriendsHandles;
-//			}
-//
-//			@Override
-//			protected void onPostExecute(final ArrayList<String> result) {
-//				delegate.onFriendsResponse(result);
-//			}
-//
-//			@Override
-//			protected void onCancelled() {
-//			}
-//		}
 
-
-
-	private static _DataService appDataService = new _DataService();
+	private static _DataService appDataService;
 	public DataService getDataManager() {
 		return new DataService();
 	}
@@ -387,14 +334,14 @@ public class PPManager {
 		DataService() {
 			if (appDataService == null) {
 				appDataService = new _DataService();
-				appDataService.createBucket(userPrefs.getMyDataStorage(devPrefs.getAppName()), new ArrayList<String>(), false, CONTEXT, (String bucketName, String key, JsonObject value, String error) -> {
+				createBucket(userPrefs.getMyDataStorage(devPrefs.getAppName()), new ArrayList<String>(), false, CONTEXT, (String bucketName, String key, JsonObject value, String error) -> {
 					if (error != null) {
 						Log.e("AppData create error:", error + " for bucket: " + userPrefs.getMyDataStorage(devPrefs.getAppName()));
 					} else {
 						Log.d("Created AppData", userPrefs.getMyDataStorage(devPrefs.getAppName()));
 					}
 				});
-				appDataService.createBucket(userPrefs.getMyGlobalDataStorage(devPrefs.getAppName()), new ArrayList<String>(), true, CONTEXT, (String bucketName, String key, JsonObject value, String error) -> {
+				createBucket(userPrefs.getMyGlobalDataStorage(devPrefs.getAppName()), new ArrayList<String>(), true, CONTEXT, (String bucketName, String key, JsonObject value, String error) -> {
 					if (error != null) {
 						Log.e("GlobalAppData create error:", error + " for bucket: " + userPrefs.getMyGlobalDataStorage(devPrefs.getAppName()));
 					} else {
@@ -409,13 +356,12 @@ public class PPManager {
 			appDataService.readBucket(bucketname, key, CONTEXT, cb);
 		}
 
-		//		public void writeData(String bucketname, String key, String value, _CallbackFunction._Data cb ) {
 		public void writeData(String bucketname, String key, JsonObject value, _CallbackFunction._Data cb ) {
 			appDataService.writeBucket(bucketname, key, value, false, CONTEXT, cb);
 		}
 
-		public void createBucket(String bucketname, ArrayList<String> bucketUsers, Boolean isPublic, _CallbackFunction._Data cb, Context CONTEXT) {
-
+		public void createBucket(String bucketname, ArrayList<String> bucketUsers, Boolean isPublic, Context CONTEXT, _CallbackFunction._Data cb) {
+			appDataService.createBucket(bucketname, bucketUsers, isPublic, CONTEXT, cb);
 		}
 	}
 
