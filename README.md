@@ -47,7 +47,7 @@ The playPORTAl service requires setting up your app in the playPORTAL.
     
     * Add the following to your app/module level build.gradle:
     ```java
-    implementation 'com.dynepic.ppsdk_android:ppsdk_android:0.0.0.4@aar'
+    implementation 'com.dynepic.ppsdk_android:ppsdk_android:0.0.5@aar'
     ```
 
 # Using the playPORTAL Manager
