@@ -9,7 +9,8 @@ import com.dynepic.ppsdk_android.models.Bucket;
 import com.dynepic.ppsdk_android.models.Tokens;
 import com.dynepic.ppsdk_android.models.User;
 import com.dynepic.ppsdk_android.utils._DevPrefs;
-
+import com.dynepic.ppsdk_android.utils._CallbackFunction;
+import com.dynepic.ppsdk_android.utils._Utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -39,55 +40,72 @@ import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
 
+import static java.lang.Thread.sleep;
+
 //import okhttp3.Response;
 
 
 public class _WebApi {
-	private static Boolean refreshedAtStartup = false;
-	private static _DevPrefs devPrefs;
-	private static Context CONTEXT;
-	public void setContext(Context c) { CONTEXT = c; }
+	private _DevPrefs devPrefs;
+	private static Boolean refreshInProgress = false;
+
+	public void setDevPrefs(_DevPrefs dp) { devPrefs = dp; }
 	public _DevPrefs getDevPrefs() {
-		if (devPrefs == null) devPrefs = new _DevPrefs(CONTEXT);
 		return devPrefs;
 	}
 
-	public _WebApi(Context c) {
-		this.setContext(c);
-		if(refreshedAtStartup == true) return;
-		Log.d("_WebApi constructor", "context:"+c);
-		refreshAccessToken();
-		refreshedAtStartup = true;
+	public _WebApi(_DevPrefs devPrefs, _CallbackFunction._Auth cb, _CallbackFunction._Generic webInitCb) {
+		this.setDevPrefs(devPrefs);
+		setNotifyOnAuthChanges(cb);
+
+		ZonedDateTime rightnow = ZonedDateTime.now();
+		if(rightnow.isAfter(_Utils.dateTimeFromString(getDevPrefs().getTokenExpirationTime()))) {
+			refreshAccessToken((Boolean status) -> {
+				if (status) {
+					Log.d("refreshAccessToken: status:", status.toString());
+				}
+				webInitCb.f(status);
+			});
+		} else {
+			webInitCb.f(true);
+		}
 	}
 
-	private static class customInterceptor implements Interceptor {
+	class PPCustomInterceptor implements Interceptor {
 		@Override
-		public okhttp3.Response intercept(Chain chain) throws IOException {
+		public okhttp3.Response intercept(Interceptor.Chain chain) throws IOException {
 			Request request = chain.request();
 			okhttp3.Response response = chain.proceed(request);
 
-			if (response.code()!=409 || response.code()!=200){
-				//ToDo: Handle Success
+			if(response.code() == 409 || response.code()/100 == 2){
+				return response;
+			} else {
+				if(response.code() == 401) {
+//					Log.d("Interceptor handling response.code == 401", "refresh token ");
+
+					refreshAccessToken((Boolean status) -> {
+//						Log.d("Interceptor finished refreshing token", "cloning request");
+//						Log.d("Interceptor retry request: ", request.toString());
+						chain.call().clone(); // retry
+					});
+				}
+				return response;
 			}
-			else{
-				//ToDo: Handle Failure, e.g. refresh token and resend request
-			}
-			return response;
 		}
 	}
 
 	private static PPWebApiInterface sPPWebApiInterface;
+	PPCustomInterceptor ppCustomInterceptor = new PPCustomInterceptor();
 
-	public static PPWebApiInterface getApi(String burl) {
-		//ToDo: logging interceptor for third party?
-
+    public synchronized PPWebApiInterface getApi(String burl) {
 		if (sPPWebApiInterface == null) {
-//						if(devPrefs.getEnvironment()) {
-				HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-				loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+			HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
+			loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+
 
 			OkHttpClient client = new OkHttpClient.Builder()
 					.addInterceptor(loggingInterceptor)
+					.addInterceptor(ppCustomInterceptor)
 					.build();
 
 			Gson gson = new GsonBuilder()
@@ -129,7 +147,7 @@ public class _WebApi {
 
 		// Data / Buckets API calls
 		@PUT("/app/v1/bucket")
-		Call<Bucket> putData(@Body Bucket bucketconfig, @Header("Authorization") String authorization); // create/open bucket
+		Call<JsonObject> putData(@Body Bucket bucketconfig, @Header("Authorization") String authorization); // creates/opens bucket
 
 		@GET("/app/v1/bucket")
 		Call<JsonObject> readData(@QueryMap Map<String, String> queryparms, @Header("Authorization") String authorization);
@@ -143,9 +161,14 @@ public class _WebApi {
 
 	}
 
-	// Refresh / Access JWT mgt
-
+	// ------------------------------------------------------------------------------------------
+	// Refresh / Access Token mgt
+	// ------------------------------------------------------------------------------------------
 	private static PPOauthInterface sPPOauthInterface;
+	private _CallbackFunction._Auth authCallback;
+	public void setNotifyOnAuthChanges(_CallbackFunction._Auth cb) {
+		authCallback = cb;
+	}
 
 	public static PPOauthInterface getOauthApi(String burl) {
 		if (sPPOauthInterface == null) {
@@ -153,7 +176,8 @@ public class _WebApi {
 			loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
 			OkHttpClient client = new OkHttpClient.Builder()
-					.addNetworkInterceptor(loggingInterceptor)
+//					.addNetworkInterceptor(loggingInterceptor)
+					.addInterceptor(loggingInterceptor)
 					.build();
 			Gson gson = new GsonBuilder()
 					.setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
@@ -166,6 +190,7 @@ public class _WebApi {
 
 			sPPOauthInterface = retrofit.create(PPOauthInterface.class);
 		}
+
 		return sPPOauthInterface;
 	}
 
@@ -178,15 +203,17 @@ public class _WebApi {
 		Call<Tokens> getTokens(@QueryMap Map<String, String> queryparms);
 	}
 
-	private Boolean refreshInProgress = false;
-
-	public boolean refreshAccessToken() {
+	public void refreshAccessToken(_CallbackFunction._Generic cb) {
+		ZonedDateTime rightnow = ZonedDateTime.now();
+		if(rightnow.isBefore(_Utils.dateTimeFromString(getDevPrefs().getTokenExpirationTime()))) {
+			cb.f(true);
+		}
 		synchronized (refreshInProgress) {
-			if (refreshInProgress) return true;
+			if (refreshInProgress) cb.f(true);
 			refreshInProgress = true;
 		}
 
-		Log.d("refreshAccessToken:", getDevPrefs().getClientRefreshToken());
+		Log.d("refreshAccessToken AT:", getDevPrefs().getClientAccessToken());
 		Map<String, String> queryparms = new HashMap<String, String>()
 		{{
 				put("client_id", getDevPrefs().getClientId());
@@ -197,25 +224,30 @@ public class _WebApi {
 
 		Call<Tokens> call = getOauthApi(getDevPrefs().getBaseUrl()).getTokens(queryparms);
 		call.enqueue(new Callback<Tokens>() {
+
 			@Override
 			public void onResponse(Call<Tokens> call, Response<Tokens> response) {
 				if(response.code() == 200) {
 					Tokens tokens = response.body();
 					extractAndSaveTokens(tokens);
-					Log.d("refresh token res: ", String.valueOf(response.body()));
+					synchronized (refreshInProgress) { refreshInProgress = false; }
+					cb.f(true);
 				} else {
 					Log.e("Error", "refreshingAccessToken");
+					if(authCallback!= null) authCallback.f(false);
+					synchronized (refreshInProgress) { refreshInProgress = false; }
+					cb.f(false);
 				}
-				refreshInProgress = false;
 			}
 
 			@Override
 			public void onFailure(Call<Tokens> call, Throwable t) {
 				Log.e("refresh token error:", "failed with " + t);
-				refreshInProgress = false;
+				if(authCallback != null) authCallback.f(false);  // when refresh fails, auth is lost
+				synchronized (refreshInProgress) { refreshInProgress = false; }
+				cb.f(false);
 			}
 		});
-		return true;
     }
 
     public void extractAndSaveTokens(Tokens tokens) {
@@ -226,7 +258,7 @@ public class _WebApi {
 			date.plusHours(1);
 		}
 
-		devPrefs.setAuthParms(tokens.getAccessToken(), tokens.getRefreshToken(), date.toString());
+		devPrefs.setAuthParms(tokens.getAccessToken(), tokens.getRefreshToken(), _Utils.stringFromDateTime(date));
 
 		}
 	}
