@@ -1,9 +1,14 @@
 package com.dynepic.ppsdk_android.utils;
 
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+
+import java.time.ZonedDateTime;
+import java.util.Date;
+
+import com.dynepic.ppsdk_android.utils._Utils;
 
 public class _DevPrefs {
 
@@ -18,6 +23,8 @@ public class _DevPrefs {
     private String CLIENT_REFRESH = "CLIENT_REFRESH";
     private String TOKEN_EXPIRATION_TIME = "TOKEN_EXPIRATION_TIME";
     private String APP_NAME = "APP_NAME";
+
+    private String cachedAccessToken = "";
 
     @SuppressLint("CommitPrefEdits")
     public _DevPrefs(Context context) {
@@ -61,6 +68,7 @@ public class _DevPrefs {
         return _sharedPrefs.getString(CLIENT_ACCESS, "");
     }
     public void setClientAccessToken(String value) {
+        cachedAccessToken = value;
         _prefsEditor.putString(CLIENT_ACCESS, value);
         _prefsEditor.apply();
     }
@@ -82,7 +90,7 @@ public class _DevPrefs {
     }
 
     public String getAppName() { return _sharedPrefs.getString(APP_NAME, "unknown"); }
-    public void setAppName(String value) {
+        public void setAppName(String value) {
         _prefsEditor.putString(APP_NAME, value);
         _prefsEditor.apply();
     }
@@ -97,9 +105,14 @@ public class _DevPrefs {
         String USER = _sharedPrefs.getString(CLIENT_ID, "");
         String KEY = _sharedPrefs.getString(CLIENT_SEC, "");
         String RED = _sharedPrefs.getString(CLIENT_REDIRECT, "");
-        return !USER.isEmpty() || !USER.equalsIgnoreCase("") ||
-                !KEY.isEmpty() || !KEY.equalsIgnoreCase("") ||
-                !RED.isEmpty() || !RED.equalsIgnoreCase("");
+        String AT = _sharedPrefs.getString(CLIENT_ACCESS, "");
+        String RT = _sharedPrefs.getString(CLIENT_REFRESH, "");
+        String EXPT = _sharedPrefs.getString(TOKEN_EXPIRATION_TIME, "");
+
+        ZonedDateTime date = ZonedDateTime.now();
+        Boolean expired =  _Utils.dateTimeFromString(EXPT).isAfter(date);
+        Log.d("USER:", USER + " KEY:" + KEY + " RED:" + RED + " AT:" + AT + " RT:" + RT + " expired:" + expired);
+        return !(USER.isEmpty() || KEY.isEmpty() || RED.isEmpty() ||  RT.isEmpty());  // Ok to have invalid or expired AccessToken (will be fixed by refresh)
     }
 
     public void clear(){
