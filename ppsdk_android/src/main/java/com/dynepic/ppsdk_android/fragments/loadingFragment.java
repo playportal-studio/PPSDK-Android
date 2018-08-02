@@ -1,4 +1,4 @@
-package com.dynepic.ppsdk_android.fragments;
+package ppsdk_android.fragments;
 
 import android.app.DialogFragment;
 import android.content.Context;
