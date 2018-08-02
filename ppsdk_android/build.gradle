@@ -3,7 +3,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'com.dynepic.ppsdk_android'
-version = '0.0.5'
+version = '0.0.6'
 
 
 // Bintray
@@ -21,7 +21,7 @@ ext {
     siteUrl = 'https://github.com/Dynepic/PPSDK-Android'
     gitUrl = 'https://github.com/Dynepic/PPSDK-Android.git'
 
-    libraryVersion = '0.0.5'
+    libraryVersion = '0.0.6'
 
     developerId = 'presadb' // Maven plugin uses this. I don't know if it needs to be anything special.
     developerName = 'Ethan Price'
@@ -39,7 +39,7 @@ android {
         minSdkVersion 26
         targetSdkVersion 27
         versionCode 1
-        versionName "0.0.5"
+        versionName "0.0.6"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
