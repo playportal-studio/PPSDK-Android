@@ -71,12 +71,12 @@ Obtain your client KEY, SECRET, and REDIRECT URL from when you setup the playPOR
 
 Example:
 ```java
-if (ppManager.isConfigured()){
-	//Implement your activity transaction here
-}
-else{
-    ppManager.configure("UNIQUE_KEY_STRING","UNIQUE_SECRET_STRING","unique://redirect/string");
-}
+    ppManager.configure("UNIQUE_KEY_STRING",
+    "UNIQUE_SECRET_STRING",
+    "unique://redirect/string", 
+    "SANDBOX",
+    "yourappname");
+
 ```
 
 
@@ -90,18 +90,64 @@ Intent intent = new Intent(CONTEXT, yourActivity.class);
 ppManager.showSSOLogin(intent);
 ```
 
+Then, add an "authentication listener". This method in your app will be invoked on changes in authentication status (NB: shown here as a lambda function.)
+
+```
+  ppManager.addAuthListener((Boolean isAuthd) -> {
+            Log.d("authListener invoked authState:", isAuthd.toString());
+            if(!authd) redirectUItoSSOLogin();
+        });
+```
+
+Next, check if this user is already auth'd into your app and take appropriate action (simple example shown):
+```
+        if (ppManager.isAuthenticated()) {
+            if(ppManager.getUserData().hasUser()){ 
+                Intent intent = new Intent(CONTEXT, UserProfileActivity.class);
+                CONTEXT.startActivity(intent);
+                ACTIVITY_CONTEXT.finish();
+            } else { 
+                // Redirect to SSO Login screen
+                Intent intent = new Intent(CONTEXT, LoginActivity.class);
+                CONTEXT.startActivity(intent);
+                ACTIVITY_CONTEXT.finish();
+            }
+        }
+    }
+```    
+
+
+
+
 
 ## Getting Basic User Data:
+Each user has two auto-configured data stores; 
 
-A full list of methods to use are available on the wiki HERE.
+* their App Data (private)
+* Global App Data (shared by all users of this app)
 
-Examples:
-```java
-String userHandle = ppManager.getUserData().getHandle();
+These data stores accept reads and writes of JSON formatted data.
+
 ```
-OR (if you create a UserData variable)
-```java
-UserData userdata = ppManager.getUserData();
-String userHandle = userData.getHandle();
-String userName = userData.getName();
+  public void readData(String bucketname, String key, _CallbackFunction._Data cb)
+
+
+  parms:
+    bucketname - string name of the bucket to be read 
+    key - each JSON data is stored as K:V pair and referenced by the Key 
+    cb - Callback function invoked on read completion or error
+  
+
+Example:
+  
+  ppManager.getDataManager().readData(userData.getMyDataStorage(), 
+                                      "TestData", 
+                                      (JsonObject data, String error) -> {
+      if (error == null) {
+          Log.d("Read bucketName:", userData.getMyDataStorage() + " key:" + "TestData" + " value:" + data.toString());
+      } else {
+          Log.e("Data read error:", error);
+      }
+  });
 ```
+NB - lambda functions are utilized to make the examples more concise.
