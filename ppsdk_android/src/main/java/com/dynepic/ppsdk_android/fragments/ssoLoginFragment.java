@@ -1,4 +1,4 @@
-package com.dynepic.ppsdk_android.fragments;
+package ppsdk_android.fragments;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -19,9 +19,9 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.dynepic.ppsdk_android.PPManager;
 import com.dynepic.ppsdk_android.R;
 import com.dynepic.ppsdk_android.models.User;
-import com.dynepic.ppsdk_android.models.UserHandler;
 import com.dynepic.ppsdk_android.utils._DevPrefs;
 import com.dynepic.ppsdk_android.utils._DialogFragments;
 
@@ -29,12 +29,9 @@ import java.lang.reflect.Method;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
 
 
 public class ssoLoginFragment extends DialogFragment {
@@ -43,7 +40,6 @@ public class ssoLoginFragment extends DialogFragment {
     private Activity ACTIVITY_CONTEXT;
     private loadingFragment loadingFragment;
     private Intent NEXT_INTENT;
-    private UserHandler userHandler;
     private _DevPrefs devPrefs;
 
     public ssoLoginFragment() {}
@@ -142,60 +138,8 @@ public class ssoLoginFragment extends DialogFragment {
 		}
         devPrefs.setTokenExpirationTime(date.toString());
 
-        userHandler = new UserHandler(CONTEXT);
-
-        updateUserFromWeb(this);
-    }
-
-    public void updateUserFromWeb(ssoLoginFragment ssoLoginFragment) {
         _DialogFragments.showDialogFragmentNoClear(ACTIVITY_CONTEXT, loadingFragment, false);
-        _DevPrefs settings = new _DevPrefs(CONTEXT);
-        String btoken = "Bearer " + settings.getClientAccessToken();
-        Log.i("SSO_LOGIN", "Requesting User Data");
-
-        //region Call User Data
-        Call<User> call = getApi(devPrefs.getBaseUrl()).getUser(btoken);
-        call.enqueue(new Callback<User>() {
-            @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-                loadingFragment.dismiss();
-                if (response.code() == 200) {
-                    System.out.println(response.body());
-                    User userObject = response.body();
-                    userHandler.populateUserData(userObject);
-                    if(!userHandler.getHandle().equals("")){
-                        Log.i("SSO_LOGIN", "UserData Retrieved\n"+ userHandler.toString());
-                        try{
-                            CONTEXT.startActivity(NEXT_INTENT);
-                            ACTIVITY_CONTEXT.finish();
-                            ssoLoginFragment.dismiss();
-                        }catch (Exception e){
-                            e.printStackTrace();
-                            Log.e(" SSO_LOGIN_ERR","Did you specify context, or an intent for your next activity?");
-                            Log.e(" SSO_LOGIN_ERR","Error in class: "+ACTIVITY_CONTEXT.getLocalClassName());
-                            Log.e(" SSO_LOGIN_ERR","Intent is: "+NEXT_INTENT);
-                        }
-
-                    }
-                }else{
-                    //Dialogs.ShowDialog(LoginError())
-                    //Dialogs.ShowDialog(SecurityError())
-                    Log.e(" SSO_LOGIN_ERR","Error getting user data.");
-                    Log.e(" SSO_LOGIN_ERR","Response code is : "+response.code());
-                    Log.e(" SSO_LOGIN_ERR","Response message is : "+response.message());
-                    //Kick back to login
-
-                }
-            }
-
-            @Override
-            public void onFailure(Call<User> call, Throwable t) {
-                Log.e("SSO_LOGIN_ERR", "Request failed with throwable: " + t);
-                //Call Failed. Try again
-                //Kick back to login
-            }
-        });
-        //endregion
-
+        PPManager ppManager = PPManager.getInstance();
+        ppManager.updateUserFromWeb(this, loadingFragment, ACTIVITY_CONTEXT, NEXT_INTENT);
     }
 }
