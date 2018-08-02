@@ -1,6 +1,5 @@
 package com.dynepic.ppsdk_android.utils;
 
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -116,11 +115,11 @@ public class _UserPrefs {
         _prefsEditor.apply();
     }
 
-    public String getMyDataStorage(String appName) {
-        return (handle + "@" + appName);
+    public String myData(String appName) {
+        return (getHandle() + "@" + appName);
     }
-    public String getMyGlobalDataStorage(String appName) {
-        return("globalAppData" + "@" + appName);
+    public String globalData(String appName) {
+		return("globalAppData" + "@" + appName);
     }
 
     public ArrayList<String> getFriendData(){
