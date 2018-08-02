@@ -3,11 +3,12 @@ package com.dynepic.ppsdk_android;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.dynepic.ppsdk_android.fragments.ssoLoginFragment;
+import ppsdk_android.fragments.ssoLoginFragment;
+import ppsdk_android.fragments.loadingFragment;
 import com.dynepic.ppsdk_android.models.User;
+import com.dynepic.ppsdk_android.models.UserHandler;
 import com.dynepic.ppsdk_android.utils._CallbackFunction;
 import com.dynepic.ppsdk_android.utils._DataService;
 import com.dynepic.ppsdk_android.utils._DevPrefs;
@@ -18,13 +19,13 @@ import com.dynepic.ppsdk_android.utils._WebApi;
 import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import okhttp3.Interceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
+import static java.lang.Thread.sleep;
 
 /**
  * This class should handle most of the activity within the app.
@@ -51,12 +52,10 @@ import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
 
  PPManager ppManager = new PPManager(CONTEXT, ACTIVITY_CONTEXT);
 
-
- * Configure your Client ID, Client Secret, and Redirect URL.
- * This can be checked using isConfigured() - see below.
-
  ppManager.configure("CLIENT_ID","CLIENT_SECRET","REDIRECT_URL")
 
+ * Check that this user is configured and authenticated
+ * This can be checked using isAuthentidated() - see below.
 
  * Changing config settings is done through ppManager.getConfiguration()
  * Make sure that ppManager is instantiated.
@@ -64,18 +63,20 @@ import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
 
  ppManager.getConfiguration().setClientRedirect("REDIRECT_STRING")
 
+ * Register an authListener to detect changes in authentication state
+ ppManager.addAuthListener(Callback  cb);
 
- * Call the Single-Sign-On Login page
- * The intent indicates which activity you want to go to after passing the SSO Login
+ * Check authentication status
+ ppManager.isAuthenticated()
 
+ * If not authenticated:
+ * -- Call the Single-Sign-On Login page
+ * -- which includes the intent indicates which activity you want to go to after passing the SSO Login
  ppManager.showSSOLogin(INTENT)
 
+* Else, if authenticated
+* -- enter app
 
- * Check to see if the PPManager has been configured at launch
- * This is normally a good check in case the user has cleared application data.
- * Returns TRUE if the id, secret, and redirect-url are all non-null AND non-empty strings.
-
- ppManager.isConfigured()
 
 
  * Getting logged in user data is done through get and set methods
@@ -90,7 +91,6 @@ import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
  ===================
  = Friends Request =
  ===================
-
  * In your controlling activity or class, you need to specify "implements"
 
  public class YOUR_CLASS_NAME implements PPManager.FriendsService.onFriendsResponse {}
@@ -112,27 +112,55 @@ import static com.dynepic.ppsdk_android.utils._WebApi.getApi;
  *
  */
 
-
+// PPManager is a singleton
 public class PPManager {
-	private Context CONTEXT;
-	private Activity ACTIVITY;
-	private _DevPrefs devPrefs;
-	private _UserPrefs userPrefs;
-	private _WebApi webApi;
-
-	public PPManager(Context context, Activity activity) {
-		CONTEXT = context;
-		ACTIVITY = activity;
-		devPrefs = new _DevPrefs(CONTEXT);
-		userPrefs = new _UserPrefs(CONTEXT);
-		webApi  = new _WebApi(context);
+	private AtomicInteger counter = new AtomicInteger();
+	public int getNextUniqueIndex() {
+		return counter.getAndIncrement();
 	}
 
-	//region Configuration
+	private Context context;
+	private Activity activity;
+	private _DevPrefs devPrefs;
+	private _UserPrefs userPrefs;
+	private UserHandler userHandler;
+	public _WebApi webApi;
+	private _CallbackFunction._Auth authListenerFnx;
+
+	public void setContextAndActivity(Context c, Activity a) {
+		Log.d("PPManager:", "Context:" + c.getPackageName() + " Activity:"+ a.getCallingPackage());
+		context = c;
+		activity = a;
+		devPrefs = new _DevPrefs(context);
+		userPrefs = new _UserPrefs(context);
+		userHandler = new UserHandler(context);
+	}
+
+      // PPManager is a singleton
+      private static PPManager ppManager = new PPManager();
+      public static PPManager getInstance( ) { return ppManager; }
+      private PPManager() {  // A private Constructor prevents any other class from instantiating.
+		  Log.d("PPManager:", "private constructor invoked");
+      }
 
 
+	// --------------------------------------------------------------------------------
+	// Auth
+	// invoke apps authListener on an auth status change
+	// --------------------------------------------------------------------------------
+	public void authListener(Boolean isAuthd) {
+		Log.d("authListener invoked: ", isAuthd.toString());
+		if(authListenerFnx != null) authListenerFnx.f(isAuthd);
+	}
+	public void addAuthListener(_CallbackFunction._Auth f) {
+		Log.d("authListener added: ", f.toString());
+		authListenerFnx = f;
+	}
 
-	public void configure(String CLIENT_ID, String CLIENT_SECRET, String REDIRECT_URL, String env, String appName) {
+	// --------------------------------------------------------------------------------
+	// Main configuration of the playPORTAL mgr
+	// --------------------------------------------------------------------------------
+	public void configure(String CLIENT_ID, String CLIENT_SECRET, String REDIRECT_URL, String env, String appName, _CallbackFunction._Generic cb) {
 
 		Log.d("PPManager.Configure", "\nConfiguring PPManager:\nID : " + CLIENT_ID + "\nSEC : " + CLIENT_SECRET + "\nREDIR : " + REDIRECT_URL + "\nEnv :" + env + "\nApp Name :" + appName);
 		devPrefs.setClientId(CLIENT_ID);
@@ -146,10 +174,14 @@ public class PPManager {
 			devPrefs.setBaseUrl("https://sandbox.iokids.net");
 		}
 
-
+		webApi  = new _WebApi(devPrefs, this::authListener, (status) -> {
+			Log.d("_WebApi init'd status:", status.toString());
+			cb.f(status);
+		});
 	}
 
-	public Boolean isConfigured() {
+
+	public Boolean isAuthenticated() {
 		return devPrefs.exists();
 	}
 
@@ -217,7 +249,9 @@ public class PPManager {
 	}
 	//endregion
 
+	// --------------------------------------------------------------------------------
 	//region UserData
+    // --------------------------------------------------------------------------------
 	public UserData getUserData() {
 		return new UserData();
 	}
@@ -264,29 +298,70 @@ public class PPManager {
 			return userPrefs.getUserType();
 		}
 
-		public String getMyDataStorage() {
+		public String myData() {
 			return userPrefs.getHandle() + "@" + devPrefs.getAppName();
-//			return userPrefs.getMyDataStorage(devPrefs.getAppName());
 		}
 
-		public String getMyGlobalDataStorage() {
+		public String globalData() {
 			return "globalAppData@" + devPrefs.getAppName();
-//			return userPrefs.getMyGlobalDataStorage(devPrefs.getAppName());
 		}
-		//This returns users as a string, not as user objects.
-		// sharedPrefs has issues with storing objects.
-//		public ArrayList<String> getStoredFriendData(){
-//			if(userPrefs.getFriendData()!=null){
-//				return userPrefs.getFriendData();
-//			}
-//			else{
-//				return new ArrayList<>();
-//			}
-//		}
-
 	}
-	//endregion
 
+	public void updateUserFromWeb(ssoLoginFragment ssoLoginFragment, loadingFragment loading, Activity ACTIVITY_CONTEXT,Intent NEXT_INTENT) {
+		_DevPrefs settings = new _DevPrefs(context);
+		String btoken = "Bearer " + settings.getClientAccessToken();
+		Log.i("SSO_LOGIN", "Requesting User Data");
+		Log.i("SSO_LOGIN base url:", devPrefs.getBaseUrl() + " app:" + devPrefs.getAppName());
+
+
+		//region Call User Data
+		Call<User> call = webApi.getApi(devPrefs.getBaseUrl()).getUser(btoken);
+		call.enqueue(new Callback<User>() {
+			@Override
+			public void onResponse(Call<User> call, Response<User> response) {
+				loading.dismiss();
+				if (response.code() == 200) {
+					System.out.println(response.body());
+					User userObject = response.body();
+					userHandler.populateUserData(userObject);
+					if(!userHandler.getHandle().equals("")){
+						Log.i("SSO_LOGIN", "UserData Retrieved\n"+ userHandler.toString());
+						try{
+							context.startActivity(NEXT_INTENT);
+							ACTIVITY_CONTEXT.finish();
+							ssoLoginFragment.dismiss();
+						}catch (Exception e){
+							e.printStackTrace();
+							Log.e(" SSO_LOGIN_ERR","Did you specify context, or an intent for your next activity?");
+							Log.e(" SSO_LOGIN_ERR","Error in class: "+ACTIVITY_CONTEXT.getLocalClassName());
+							Log.e(" SSO_LOGIN_ERR","Intent is: "+NEXT_INTENT);
+						}
+
+					}
+				}else{
+					//Dialogs.ShowDialog(LoginError())
+					//Dialogs.ShowDialog(SecurityError())
+					Log.e(" SSO_LOGIN_ERR","Error getting user data.");
+					Log.e(" SSO_LOGIN_ERR","Response code is : "+response.code());
+					Log.e(" SSO_LOGIN_ERR","Response message is : "+response.message());
+					//Kick back to login
+
+				}
+			}
+
+			@Override
+			public void onFailure(Call<User> call, Throwable t) {
+				Log.e("SSO_LOGIN_ERR", "Request failed with throwable: " + t);
+				//Call Failed. Try again
+				//Kick back to login
+			}
+		});
+		//endregion
+	}
+
+	// ------------------------------------------------------------------------------
+	// Friends
+	// ------------------------------------------------------------------------------
 	public FriendsService getFriendsManager() {
 		return new FriendsService();
 	}
@@ -324,56 +399,66 @@ public class PPManager {
 	}
 
 
+	// ------------------------------------------------------------------------------
+	// Lightning Data
+	// ------------------------------------------------------------------------------
 	private static _DataService appDataService;
-	public DataService getDataManager() {
-		return new DataService();
+	public DataService data() {
+		return new DataService(webApi);
 	}
 
 	public class DataService {
 
-		DataService() {
+		DataService(_WebApi webApi) {
 			if (appDataService == null) {
-				appDataService = new _DataService();
-				createBucket(userPrefs.getMyDataStorage(devPrefs.getAppName()), new ArrayList<String>(), false, CONTEXT, (String bucketName, String key, JsonObject value, String error) -> {
+				appDataService = new _DataService(webApi);
+				createBucket(userPrefs.myData(devPrefs.getAppName()), new ArrayList<String>(), false, context, (int uniqueRef, JsonObject value, String error) -> {
 					if (error != null) {
-						Log.e("AppData create error:", error + " for bucket: " + userPrefs.getMyDataStorage(devPrefs.getAppName()));
+						Log.e("AppData create error:", error + " for bucket: " + userPrefs.myData(devPrefs.getAppName()));
 					} else {
-						Log.d("Created AppData", userPrefs.getMyDataStorage(devPrefs.getAppName()));
+						Log.d("Created AppData", userPrefs.myData(devPrefs.getAppName()));
 					}
 				});
-				createBucket(userPrefs.getMyGlobalDataStorage(devPrefs.getAppName()), new ArrayList<String>(), true, CONTEXT, (String bucketName, String key, JsonObject value, String error) -> {
+				createBucket(userPrefs.globalData(devPrefs.getAppName()), new ArrayList<String>(), true, context, (int uniqueRef, JsonObject value, String error) -> {
 					if (error != null) {
-						Log.e("GlobalAppData create error:", error + " for bucket: " + userPrefs.getMyGlobalDataStorage(devPrefs.getAppName()));
+						Log.e("GlobalAppData create error:", error + " for bucket: " + userPrefs.globalData(devPrefs.getAppName()));
 					} else {
-						Log.d("Created GlobalAppData", userPrefs.getMyGlobalDataStorage(devPrefs.getAppName()));
+						Log.d("Created GlobalAppData", userPrefs.globalData(devPrefs.getAppName()));
 					}
 				});
 			}
 		}
 
-		public void readData(String bucketname, String key, _CallbackFunction._Data cb)  {
+		public int read(String bucketname, String key, _CallbackFunction._Data cb)  {
 			Log.d("DataService readData bucket:", bucketname + " key:" + key);
-			appDataService.readBucket(bucketname, key, CONTEXT, cb);
+			int uniqueRef= getNextUniqueIndex();
+			appDataService.readBucket(uniqueRef, bucketname, key, context, cb);
+			return uniqueRef;
 		}
 
-		public void writeData(String bucketname, String key, JsonObject value, _CallbackFunction._Data cb ) {
-			appDataService.writeBucket(bucketname, key, value, false, CONTEXT, cb);
+		public int write(String bucketname, String key, JsonObject value, _CallbackFunction._Data cb ) {
+			int uniqueRef= getNextUniqueIndex();
+			appDataService.writeBucket(uniqueRef, bucketname, key, value, false, context, cb);
+			return uniqueRef;
 		}
 
-		public void createBucket(String bucketname, ArrayList<String> bucketUsers, Boolean isPublic, Context CONTEXT, _CallbackFunction._Data cb) {
-			appDataService.createBucket(bucketname, bucketUsers, isPublic, CONTEXT, cb);
+		public int createBucket(String bucketname, ArrayList<String> bucketUsers, Boolean isPublic, Context CONTEXT, _CallbackFunction._Data cb) {
+			int uniqueRef= getNextUniqueIndex();
+			appDataService.createBucket(uniqueRef, bucketname, bucketUsers, isPublic, CONTEXT, cb);
+			return uniqueRef;
 		}
 	}
 
-	private void BucketDataService() {
-	}
 
 
+	// ------------------------------------------------------------------------------------------
+	// Display SSO Login
+	// ------------------------------------------------------------------------------------------
 	public void showSSOLogin(Intent intent) {
 		Log.d("PPManager.showSSOLogin", "Launching playPORTAL SSO...");
 		ssoLoginFragment ssoLoginFragment = new ssoLoginFragment();
 		ssoLoginFragment.setNextActivity(intent);
-		_DialogFragments.showDialogFragment(ACTIVITY, ssoLoginFragment, true, "SSO");
+		_DialogFragments.showDialogFragment(activity, ssoLoginFragment, true, "SSO");
 	}
 
 }
