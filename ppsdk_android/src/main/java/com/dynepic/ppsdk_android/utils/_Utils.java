@@ -1,8 +1,13 @@
 package com.dynepic.ppsdk_android.utils;
 
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 
+import java.time.DateTimeException;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -145,5 +150,32 @@ public class _Utils {
         });
         snackbar.show();
     }
+
+    public static ZonedDateTime dateTimeFromString(String datestring)
+    {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+            return ZonedDateTime.parse(datestring, formatter);
+        }
+        catch (DateTimeParseException exc) {
+            Log.e("%s is not parsable!%n", datestring);
+            ZonedDateTime date = ZonedDateTime.now();
+            date.minusHours(4);
+            return date;
+        }
+    }
+
+    public static String stringFromDateTime(ZonedDateTime dateTime)
+    {
+        try {
+            DateTimeFormatter format = DateTimeFormatter.ISO_DATE_TIME;
+            return dateTime.format(format);
+        }
+        catch (DateTimeException exc) {
+            Log.e("dateTime input can't be formatted! ", dateTime.toString());
+            throw exc;
+        }
+    }
+
 }
 
