@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import ppsdk_android.fragments.ssoLoginFragment;
 import ppsdk_android.fragments.loadingFragment;
 import com.dynepic.ppsdk_android.models.User;
@@ -17,7 +20,9 @@ import com.dynepic.ppsdk_android.utils._UserPrefs;
 import com.dynepic.ppsdk_android.utils._WebApi;
 
 import com.google.gson.JsonObject;
+import com.squareup.picasso.OkHttp3Downloader;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -86,39 +91,10 @@ import static java.lang.Thread.sleep;
  ppManager.getUserData().getValue();
  ppManager.getUserData().setValue();
 
-
-
- ===================
- = Friends Request =
- ===================
- * In your controlling activity or class, you need to specify "implements"
-
- public class YOUR_CLASS_NAME implements PPManager.FriendsService.onFriendsResponse {}
-
- * Create request, specify activity, delegate, execute request
-
- PPManager.FriendsService.getFriends friendsRequest = new PPManager.FriendsService.getFriends(ACTIVITY);
- friendsRequest.delegate = this;
- friendsRequest.execute((Void) null);
-
- * Create @Override method to get results after the Async Call has been completed
- * Returns an ArrayList of Strings of user Handles
-
- /@Override
- public void onFriendsResponse(ArrayList<String> output) {
-    //update your UI based on response
- }
-
- *
- */
+*/
 
 // PPManager is a singleton
 public class PPManager {
-	private AtomicInteger counter = new AtomicInteger();
-	public int getNextUniqueIndex() {
-		return counter.getAndIncrement();
-	}
-
 	private Context context;
 	private Activity activity;
 	private _DevPrefs devPrefs;
@@ -180,6 +156,9 @@ public class PPManager {
 		});
 	}
 
+	public void logout() {
+		devPrefs.clear();
+    }
 
 	public Boolean isAuthenticated() {
 		return devPrefs.exists();
@@ -338,7 +317,7 @@ public class PPManager {
 						}
 
 					}
-				}else{
+				} else {
 					//Dialogs.ShowDialog(LoginError())
 					//Dialogs.ShowDialog(SecurityError())
 					Log.e(" SSO_LOGIN_ERR","Error getting user data.");
@@ -359,21 +338,36 @@ public class PPManager {
 		//endregion
 	}
 
+
+
+	// ------------------------------------------------------------------------------
+	// Methods to support image download (e.g. user profile image)
+	// ------------------------------------------------------------------------------
+	public String getPicassoParms() {
+		return "https://sandbox.iokids.net/user/v1/my/profile/picture";
+	}
+
+	public OkHttp3Downloader imageDownloader() {
+		return webApi.createDownloader();
+    }
+
+
+
+
 	// ------------------------------------------------------------------------------
 	// Friends
 	// ------------------------------------------------------------------------------
-	public FriendsService getFriendsManager() {
+	public FriendsService friends() {
 		return new FriendsService();
 	}
 
 	public class FriendsService {
-
 		ArrayList<User> friendsList;
 
 		FriendsService() {
 		}
 
-		public ArrayList<User> getFriendsData(_CallbackFunction._Friends cb) {
+		public ArrayList<User> get(_CallbackFunction._Friends cb) {
 			Call<ArrayList<User>> friendsCall = webApi.getApi(devPrefs.getBaseUrl()).getFriends(devPrefs.getClientAccessToken());
 			friendsCall.enqueue(new Callback<ArrayList<User>>() {
 				@Override
@@ -412,14 +406,14 @@ public class PPManager {
 		DataService(_WebApi webApi) {
 			if (appDataService == null) {
 				appDataService = new _DataService(webApi);
-				createBucket(userPrefs.myData(devPrefs.getAppName()), new ArrayList<String>(), false, context, (int uniqueRef, JsonObject value, String error) -> {
+				createBucket(userPrefs.myData(devPrefs.getAppName()), new ArrayList<String>(), false, context, (JsonObject value, String error) -> {
 					if (error != null) {
 						Log.e("AppData create error:", error + " for bucket: " + userPrefs.myData(devPrefs.getAppName()));
 					} else {
 						Log.d("Created AppData", userPrefs.myData(devPrefs.getAppName()));
 					}
 				});
-				createBucket(userPrefs.globalData(devPrefs.getAppName()), new ArrayList<String>(), true, context, (int uniqueRef, JsonObject value, String error) -> {
+				createBucket(userPrefs.globalData(devPrefs.getAppName()), new ArrayList<String>(), true, context, (JsonObject value, String error) -> {
 					if (error != null) {
 						Log.e("GlobalAppData create error:", error + " for bucket: " + userPrefs.globalData(devPrefs.getAppName()));
 					} else {
@@ -429,23 +423,17 @@ public class PPManager {
 			}
 		}
 
-		public int read(String bucketname, String key, _CallbackFunction._Data cb)  {
+		public void read(String bucketname, String key, _CallbackFunction._Data cb)  {
 			Log.d("DataService readData bucket:", bucketname + " key:" + key);
-			int uniqueRef= getNextUniqueIndex();
-			appDataService.readBucket(uniqueRef, bucketname, key, context, cb);
-			return uniqueRef;
+			appDataService.readBucket(bucketname, key, context, cb);
 		}
 
-		public int write(String bucketname, String key, JsonObject value, _CallbackFunction._Data cb ) {
-			int uniqueRef= getNextUniqueIndex();
-			appDataService.writeBucket(uniqueRef, bucketname, key, value, false, context, cb);
-			return uniqueRef;
+		public void write(String bucketname, String key, JsonObject value, _CallbackFunction._Data cb ) {
+			appDataService.writeBucket(bucketname, key, value, false, context, cb);
 		}
 
-		public int createBucket(String bucketname, ArrayList<String> bucketUsers, Boolean isPublic, Context CONTEXT, _CallbackFunction._Data cb) {
-			int uniqueRef= getNextUniqueIndex();
-			appDataService.createBucket(uniqueRef, bucketname, bucketUsers, isPublic, CONTEXT, cb);
-			return uniqueRef;
+		public void createBucket(String bucketname, ArrayList<String> bucketUsers, Boolean isPublic, Context CONTEXT, _CallbackFunction._Data cb) {
+			appDataService.createBucket(bucketname, bucketUsers, isPublic, CONTEXT, cb);
 		}
 	}
 
@@ -460,5 +448,4 @@ public class PPManager {
 		ssoLoginFragment.setNextActivity(intent);
 		_DialogFragments.showDialogFragment(activity, ssoLoginFragment, true, "SSO");
 	}
-
 }
