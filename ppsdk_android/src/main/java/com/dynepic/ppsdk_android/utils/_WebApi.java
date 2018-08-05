@@ -5,6 +5,7 @@ import android.media.Image;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.dynepic.ppsdk_android.PPManager;
 import com.dynepic.ppsdk_android.models.Bucket;
 import com.dynepic.ppsdk_android.models.Tokens;
 import com.dynepic.ppsdk_android.models.User;
@@ -15,6 +16,7 @@ import com.dynepic.ppsdk_android.utils._Utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.squareup.picasso.OkHttp3Downloader;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -81,8 +83,6 @@ public class _WebApi {
 				return response;
 			} else {
 				if(response.code() == 401) {
-//					Log.d("Interceptor handling response.code == 401", "refresh token ");
-
 					refreshAccessToken((Boolean status) -> {
 //						Log.d("Interceptor finished refreshing token", "cloning request");
 //						Log.d("Interceptor retry request: ", request.toString());
@@ -160,6 +160,29 @@ public class _WebApi {
 
 
 	}
+
+
+	private class BasicAuthInterceptor implements Interceptor {
+
+		@Override
+		public okhttp3.Response intercept(Interceptor.Chain chain) throws IOException {
+			final PPManager ppsdk = PPManager.getInstance();
+			final Request original = chain.request();
+			final Request.Builder requestBuilder = original.newBuilder()
+					.header("Authorization", "Bearer " + getDevPrefs().getClientAccessToken());
+			Request request = requestBuilder.build();
+			return chain.proceed(requestBuilder.build());
+		}
+	}
+	public OkHttp3Downloader createDownloader() {
+		OkHttpClient okHttpClient = new OkHttpClient.Builder()
+				.addInterceptor(new BasicAuthInterceptor())
+				.build();
+		return new OkHttp3Downloader(okHttpClient);
+	}
+
+
+
 
 	// ------------------------------------------------------------------------------------------
 	// Refresh / Access Token mgt
