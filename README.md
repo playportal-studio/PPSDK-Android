@@ -47,107 +47,189 @@ The playPORTAl service requires setting up your app in the playPORTAL.
     
     * Add the following to your app/module level build.gradle:
     ```java
-    implementation 'com.dynepic.ppsdk_android:ppsdk_android:0.0.5@aar'
+    implementation 'com.dynepic.ppsdk_android:ppsdk_android:0.0.7@aar'
     ```
 
-# Using the playPORTAL Manager
+## Using the playPORTAL SDK
 
-## Setup:
+### Initialize the playPORTAL SDK
 
-
-### * Initialize the manager, and specify context:
-
-You need to specify the context of the activity you are in. PPManager methods cannot be referenced from static context. Any usage of the PPManager requires context. After initializing and configuring the manager, everything else is mostly straight forward.
-
-```java
-Activity ACTIVITY_CONTEXT = this;
-Context CONTEXT = this;
-PPManager ppManager = new PPManager(CONTEXT, ACTIVITY_CONTEXT);
-```
-
-### Set your Configuration parameters
-
-Obtain your client KEY, SECRET, and REDIRECT URL from when you setup the playPORTAL developer account. If you need to check to see if the PPManager has been initialized, you can check using the isConfigured() method.
-
-Example:
-```java
-    ppManager.configure("UNIQUE_KEY_STRING",
-    "UNIQUE_SECRET_STRING",
-    "unique://redirect/string", 
-    "SANDBOX",
-    "yourappname");
-
-```
+#### Set your Configuration parameters
+Obtain your client ID, Client SECRET, and REDIRECT URL from when you setup the playPORTAL developer account. If you need to check to see if the PPManager has been initialized, you can check using the isConfigured() method.
 
 
-## Using the SSO Login:
+#### The playPORTAL Manager
+The playPORTAL manager provides the SDK services:
 
-This method requires an intent for where you intend to send the user after login. It is called from the PPManager using showSSOLogin().
+  * Authentication using playPORTAL SSO
+  * User Profile 
+  * Friends Profiles
+  * Lightning Data - read/write JSON data to Non-volatile db
+    * User's private data - data store that is only accessible by this user
+    * Global data - data store shared among all users of your app
+    * Other data - app user can create additional "named" buckets (either private or shared) for specific usage
+    
+  Most operations using playPORTAL require web requests to the playPORTAL servers. These 
+  operations are asynchronous in nature, i.e. there is an indeterminate amount of time between a 
+  request and an associated response. In addition, requests may fail, so responses may indicate 
+  that the associated request failed.
+  
+  The SDK uses lambda functions for all async operations. 
+  
+#### Initialize the playPORTAL manager (PPManager)
 
-Example:
-```java
-Intent intent = new Intent(CONTEXT, yourActivity.class);
-ppManager.showSSOLogin(intent);
-```
+The PPManager needs to be initialized before use. This can be done in your startup activity that's run prior to any 
+operations being requested from the playPORTAL cloud. The example belows shows a code snippet in a "StartupActivity.java" 
+onCreate() method that performs all necessary init.
 
-Then, add an "authentication listener". This method in your app will be invoked on changes in authentication status (NB: shown here as a lambda function.)
+```aidl
+   protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        CONTEXT = this; //getApplicationContext()
+        ACTIVITY_CONTEXT = this;
 
-```
-  ppManager.addAuthListener((Boolean isAuthd) -> {
-            Log.d("authListener invoked authState:", isAuthd.toString());
-            if(!authd) redirectUItoSSOLogin();
-        });
-```
+        PPManager ppManager = PPManager.getInstance();
+        ppManager.setContextAndActivity(CONTEXT, ACTIVITY_CONTEXT);
 
-Next, check if this user is already auth'd into your app and take appropriate action (simple example shown):
-```
-        if (ppManager.isAuthenticated()) {
-            if(ppManager.getUserData().hasUser()){ 
-                Intent intent = new Intent(CONTEXT, UserProfileActivity.class);
-                CONTEXT.startActivity(intent);
-                ACTIVITY_CONTEXT.finish();
-            } else { 
-                // Redirect to SSO Login screen
+Add an "authentication listener". This method in your app will be invoked on changes in authentication status (NB: shown here as a lambda function.)
+```aidl
+        ppManager.addAuthListener((Boolean isAuthd) -> {
+            // add auth listener - in this case a lambda function that presents a login dialog if user is not auth'd
+            if (!isAuthd) {
                 Intent intent = new Intent(CONTEXT, LoginActivity.class);
                 CONTEXT.startActivity(intent);
                 ACTIVITY_CONTEXT.finish();
             }
-        }
-    }
-```    
-
-
-
-
-
-## Getting Basic User Data:
-Each user has two auto-configured data stores; 
-
-* their App Data (private)
-* Global App Data (shared by all users of this app)
-
-These data stores accept reads and writes of JSON formatted data.
-
+        });
 ```
-  public void readData(String bucketname, String key, _CallbackFunction._Data cb)
 
 
-  parms:
-    bucketname - string name of the bucket to be read 
-    key - each JSON data is stored as K:V pair and referenced by the Key 
-    cb - Callback function invoked on read completion or error
+Next, call the configure method and then check if this user is already auth'd into your app and take appropriate action (simple example shown):
+```aidl
+
+        //Configure SDK and check auth state
+        ppManager.configure(
+                "your-client-id",
+                "your-client-secret",
+                "appname://redirect",
+                "SANDBOX",
+                "appname",
+                (status) -> { 
+        	     // lambda function to catch configure response
+                    if (ppManager.isAuthenticated() && ppManager.getUserData().hasUser()) {
+                        Intent intent = new Intent(CONTEXT, UserProfileActivity.class);
+                        CONTEXT.startActivity(intent);
+                        ACTIVITY_CONTEXT.finish();
+                    } else {
+                        Intent intent = new Intent(CONTEXT, LoginActivity.class);
+                        CONTEXT.startActivity(intent);
+                        ACTIVITY_CONTEXT.finish();
+                    }
+                });
+    }
+```
+
   
+#### SSO Login:
+The SSO Login requires an intent for where you intend to send the user after login. It is called from the PPManager using showSSOLogin().
 
 Example:
-  
-  ppManager.getDataManager().readData(userData.getMyDataStorage(), 
-                                      "TestData", 
-                                      (JsonObject data, String error) -> {
-      if (error == null) {
-          Log.d("Read bucketName:", userData.getMyDataStorage() + " key:" + "TestData" + " value:" + data.toString());
-      } else {
-          Log.e("Data read error:", error);
-      }
-  });
+```aidl
+Intent intent = new Intent(CONTEXT, yourActivity.class);
+ppManager.showSSOLogin(intent);
 ```
-NB - lambda functions are utilized to make the examples more concise.
+
+
+## Using the SDK
+
+### User 
+#### Get User Profile
+
+The logged in user's profile is retrieved when the user logs in (via SSO Login). The user's profile 
+is then available to the app via a synchronous method as shown below:
+
+```aidl
+UserData userdata = ppManager.getUserData();
+
+// Individual fields in the profile can be retrieved as:
+String userHandle = userData.getHandle();
+String userName = userData.getName();
+String firstName = userData.getFirstName();
+String lastName = userData.getLastName();
+
+```
+
+#### Display User Profile Image
+
+The logged in user's profile image is available and can be easily captured into an ImageView as follows (note the Resource "R" id will be specified in your implementation and the 450x450 size is defined for convenience):
+
+```aidl
+   
+    ImageView imageView = (ImageView) findViewById(R.id.profile_iv_filled); 
+    Picasso p = new Picasso.Builder(CONTEXT).downloader(ppManager.imageDownloader()).build();
+    p.load(ppManager.getPicassoParms()).resize(450, 450).into(imageView, new Callback() {
+        @Override
+        public void onSuccess() {
+            Log.d("Picasso ", "success");
+        }
+
+        @Override
+        public void onError(Exception e) {
+            Log.e("Picasso ", "error:" + e);
+        }
+    });
+```
+
+### Friends
+#### Get Friends Profiles:
+ Friends profiles can be retrieved from the playPORTAL service.
+
+ ```aidl
+     ppManager.friends().get((ArrayList<User>friendsList, String e) -> {
+         if(friendsList != null && e == null) {
+             for (User f : friendsList) System.out.println("friend: " + f.getHandle() + " - " + f.getFirstName() + " " + f.getLastName());
+         } else {
+             Log.e("get friends error:", e);
+         }
+     });
+
+```
+
+
+### Data
+Two data stores are auto-created (or opened) for each user. They are:
+* User's private app data
+* Global app data (shared)
+
+Data can be stored and retrieved from either of these data stores, in addition other data stores 
+can be created as needed. All data read/written must be JSON. The read/write methods utilize JsonObjects  
+and supported marshalling routines. 
+
+#### Read
+
+```aidl
+    ppManager.data().read(userData.myData(), key, (JsonObject data, String e) -> {
+        if (e == null) {
+            Log.d("Read bucketName:",  userData.myData() + " key:" + key + " value:" + data.toString());
+        } else {
+            Log.e("Data read error:", e);
+        }
+    });
+```
+
+#### Write
+
+```aidl    
+    JsonObject jo;
+     
+    ppManager.data().write(userData.myData(), key, jo, (JsonObject data, String error) -> {
+        if (error == null) {
+            Log.d("Wrote bucketName:", userData.myData() + " key:" + key + " value:" + jo.toString() );
+        } else {
+            Log.e("Data write error:", error);
+        }
+    });
+```
+
+
+
