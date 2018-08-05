@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public interface _CallbackFunction {
 	public interface _Data {
-        public void f(int uniqueRef, @Nullable JsonObject data, @Nullable String error);
+        public void f(@Nullable JsonObject data, @Nullable String error);
 	}
 
 	public interface _Friends {
