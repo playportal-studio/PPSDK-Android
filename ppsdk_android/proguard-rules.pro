@@ -83,3 +83,7 @@
 
 #Retrofit Warnings
 -dontwarn retrofit2.**
+
+# Java 1.8 support issue
+# Error: Can't find referenced class java.lang.invoke.LambdaMetafactory
+-dontwarn java.lang.invoke.**
