@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ----
+### 0.0.8 - 2018-08-07
+##### Added
+- additional details on read/writes in README
+
+##### Changed
+- added data() read/write methods to support JSON primitives (Boolean, Integer, String) in addition to existing support for JsonObject.
+- added DEV environment along with SANDBOX and PRODUCTION
+
 ### 0.0.7 - 2018-08-05
 ##### Added
 - logout() method

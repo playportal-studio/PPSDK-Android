@@ -207,6 +207,20 @@ and supported marshalling routines.
 
 #### Read
 
+To read data from the lightning db, use the data() read method.
+```aidl
+	public void read(String bucketname, String key, _CallbackFunction._Data cb)
+
+	  parms:
+	  String bucketname - the name used to create the bucket or userData.myData() for user's private data or userData.myGlobalData() for app global data.
+      String key - key in Key:Value pair
+      _CallbackFunction._Data cb - the callback function to be invoked on completion of the read (success or failure) with the method signature
+      
+          public void f(@Nullable JsonObject data, @Nullable String error);
+          Alternatively, this callback can be implemented as a lambda function (as shown in the examples). 
+```      
+
+Example: read from user's private data at "key".
 ```aidl
     ppManager.data().read(userData.myData(), key, (JsonObject data, String e) -> {
         if (e == null) {
@@ -215,9 +229,28 @@ and supported marshalling routines.
             Log.e("Data read error:", e);
         }
     });
+    
+    NB - If a primitive type is read, then the key:value pair (where value is a primitive in { Boolean, Integer, String } will be returned as a JsonObject, i.e. { key:value }. To extract the value, do a "get" on the key.
 ```
 
 #### Write
+To write data to the lightning db, use the data() write method, with the appropriate signature for the data being written.
+
+```aidl
+		public void write(String bucketname, String key, JsonObject value, _CallbackFunction._Data cb )
+
+parms:
+	  String bucketname - the name used to create the bucket or userData.myData() for user's private data or userData.myGlobalData() for app global data.
+      String key - key in Key:Value pair
+      JsonObject value - object to store in lightning db. Can also be one of { Boolean, Integer, String } which will use one the matching method signature.
+      
+      _CallbackFunction._Data cb - the callback function to be invoked on completion of the write (success or failure) with the method signature:
+      
+          public void f(@Nullable JsonObject data, @Nullable String error);
+          Alternatively, this callback can be implemented as a lambda function (as shown in the examples). The callback data can be ignored, but the error should be checked.
+```
+
+Example: write a JsonObject "jo" to "key" in user's private data store.
 
 ```aidl    
     JsonObject jo;
