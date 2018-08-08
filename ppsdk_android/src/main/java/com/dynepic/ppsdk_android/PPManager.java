@@ -146,6 +146,8 @@ public class PPManager {
 
 		if (env == "PRODUCTION") {
 			devPrefs.setBaseUrl("https://api.playportal.io");
+		} else if (env == "DEV") {
+			devPrefs.setBaseUrl("https://develop-api.goplayportal.com");
 		} else {
 			devPrefs.setBaseUrl("https://sandbox.iokids.net");
 		}
@@ -344,7 +346,8 @@ public class PPManager {
 	// Methods to support image download (e.g. user profile image)
 	// ------------------------------------------------------------------------------
 	public String getPicassoParms() {
-		return "https://sandbox.iokids.net/user/v1/my/profile/picture";
+//		return "https://sandbox.iokids.net/user/v1/my/profile/picture";
+		return devPrefs.getBaseUrl() + "/user/v1/my/profile/picture";
 	}
 
 	public OkHttp3Downloader imageDownloader() {
@@ -428,8 +431,21 @@ public class PPManager {
 			appDataService.readBucket(bucketname, key, context, cb);
 		}
 
+		public void write(String bucketname, String key, Boolean value, _CallbackFunction._Data cb ) {
+			Log.d("write boolean:", value.toString());
+			appDataService.write(bucketname, key, value, false, context, cb);
+		}
+		public void write(String bucketname, String key, String value, _CallbackFunction._Data cb ) {
+			Log.d("write string:", value);
+			appDataService.write(bucketname, key, value, false, context, cb);
+		}
+		public void write(String bucketname, String key, Integer value, _CallbackFunction._Data cb ) {
+			Log.d("write Integer:", value.toString());
+			appDataService.write(bucketname, key, value, false, context, cb);
+		}
 		public void write(String bucketname, String key, JsonObject value, _CallbackFunction._Data cb ) {
-			appDataService.writeBucket(bucketname, key, value, false, context, cb);
+			Log.d("write JsonObject:", value.toString());
+			appDataService.write(bucketname, key, value, false, context, cb);
 		}
 
 		public void createBucket(String bucketname, ArrayList<String> bucketUsers, Boolean isPublic, Context CONTEXT, _CallbackFunction._Data cb) {

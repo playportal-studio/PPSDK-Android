@@ -6,6 +6,7 @@ import android.util.Log;
 import com.google.gson.JsonObject;
 
 
+import java.lang.reflect.GenericDeclaration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,9 +77,17 @@ public class _DataService {
 				public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
 					if(response.code() == 200) {
 						try {
-						JsonObject jdata = response.body().getAsJsonObject("data");
-						Log.d("value@key: ", key + " : "+ jdata.get(key).toString());
-						cb.f(jdata.getAsJsonObject(key), null);
+
+							JsonObject jdata = response.body().getAsJsonObject("data");
+							Log.d("jdata.get(key):", jdata.get(key).toString());
+							if (jdata.get(key).isJsonPrimitive()) {
+								Log.d("key is for a primitive... ", "synthesizing JsonObject");
+								JsonObject newjo = new JsonObject();
+								newjo.add(key, jdata.get(key));
+								cb.f(newjo, null);
+							} else {
+								cb.f(jdata.getAsJsonObject(key), null);
+							}
 						} catch(Exception e) {
 							cb.f(null, "Key: "+key+" not found in bucket:"+bucketName+"  Err:"+e.getMessage());
 						}
@@ -92,11 +101,53 @@ public class _DataService {
 			});
 		}
 	}
+	public void write(String bucketName, String key, Boolean value, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
+		Log.d("writeBucket", "bucket: " + bucketName + " key:" + key + " value:" + value);
+		if (bucketName != null && key != null) {
+			com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
+			String btoken = "Bearer " + devPrefs.getClientAccessToken();
+			JsonObject body = new JsonObject();
+			body.addProperty("key", key);
+			body.addProperty("value", value);
+			body.addProperty("id", bucketName);
+			body.addProperty("access_token", btoken);
+			writef(bucketName, body, push, CONTEXT, cb);
+		} else {
+			cb.f(null, "Invalid parms to bucket write!");
+		}
+	}
+	public void write(String bucketName, String key, String value, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
+		Log.d("writeBucket", "bucket: " + bucketName + " key:" + key + " value:" + value);
+		if (bucketName != null && key != null) {
+			com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
+			String btoken = "Bearer " + devPrefs.getClientAccessToken();
+			JsonObject body = new JsonObject();
+			body.addProperty("key", key);
+			body.addProperty("value", value);
+			body.addProperty("id", bucketName);
+			body.addProperty("access_token", btoken);
+			writef(bucketName, body, push, CONTEXT, cb);
+		} else {
+			cb.f(null, "Invalid parms to bucket write!");
+		}
+	}
+	public void write(String bucketName, String key, Integer value, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
+		Log.d("writeBucket", "bucket: " + bucketName + " key:" + key + " value:" + value);
+		if (bucketName != null && key != null) {
+			com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
+			String btoken = "Bearer " + devPrefs.getClientAccessToken();
+			JsonObject body = new JsonObject();
+			body.addProperty("key", key);
+			body.addProperty("value", value);
+			body.addProperty("id", bucketName);
+			body.addProperty("access_token", btoken);
+			writef(bucketName, body, push, CONTEXT, cb);
+		} else {
+			cb.f(null, "Invalid parms to bucket write!");
+		}
+	}
 
-
-
-
-	public void writeBucket(String bucketName, String key, JsonObject value, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
+	public void write(String bucketName, String key, JsonObject value, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
 		Log.d("writeBucket", "bucket: " + bucketName + " key:" + key + " value:" + value);
 		if (bucketName != null && key != null && value != null) {
 			com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
@@ -106,9 +157,17 @@ public class _DataService {
 			body.add("value", value);
 			body.addProperty("id", bucketName);
 			body.addProperty("access_token", btoken);
+			writef(bucketName, body, push, CONTEXT, cb);
+		} else {
+			cb.f(null, "Invalid parms to bucket write!");
+		}
+	}
 
-			Call<JsonObject> call = webApi.getApi(devPrefs.getBaseUrl()).writeData(body, btoken);
-			Log.d("write body: ", body.toString());
+	public void writef(String bucketName, JsonObject body, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
+		com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
+		String btoken = "Bearer " + devPrefs.getClientAccessToken();
+		Call<JsonObject> call = webApi.getApi(devPrefs.getBaseUrl()).writeData(body, btoken);
+		Log.d("write body: ", body.toString());
 			call.enqueue(new Callback<JsonObject>() {
 				@Override
 				public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
@@ -125,10 +184,7 @@ public class _DataService {
 					cb.f(null, t.getMessage());
 				}
 			});
-		} else {
-			cb.f(null, "Error: bucket write failed - invalid parms!");
 		}
 	}
 
-}
 
