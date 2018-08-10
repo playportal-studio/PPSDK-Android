@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ----
 ### 0.0.9 - 2018-08-08
+##### Changed
+- disabled minification / obfuscation via build.gradle
+- Update base URLs to support server domain migration
+- removed "unused" files
+
+### 0.0.9 - 2018-08-08
 ##### Added
 - minification / obfuscation via build.gradle
 

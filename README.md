@@ -230,7 +230,7 @@ Example: read from user's private data at "key".
         }
     });
     
-    NB - If a primitive type is read, then the key:value pair (where value is a primitive in { Boolean, Integer, String } will be returned as a JsonObject, i.e. { key:value }. To extract the value, do a "get" on the key.
+    NB - If a primitive type is read, then the key:value pair (where value is a primitive in { Boolean, Integer, String } will be promoted to a JsonObject, i.e. { key:value } and returned as such. To extract the value, do a "get" on the key.
 ```
 
 #### Write
@@ -263,6 +263,7 @@ Example: write a JsonObject "jo" to "key" in user's private data store.
         }
     });
 ```
+
 
 
 
