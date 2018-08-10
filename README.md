@@ -7,14 +7,14 @@ The playPORTAl service requires setting up your app in the playPORTAL.
 
 * ### <b>Step 1:</b> Create playPORTAL Partner Account
 
-	* Navigate to [playPORTAL Partner Dashboard](https://partner.iokids.net)
+	* Navigate to [playPORTAL Partner Dashboard](https://partner.playportal.io)
 	* Click on <b>Sign Up For Developer Account</b>
 	* After creating your account, email us at [info@playportal.io](mailto:info@playportal.io?subject=Developer%20Sandbox%20Access%20Request) to verify your account.
   </br>
 
 * ### <b>Step 2:</b> Register your App with playPORTAL
 
-	* After confirmation, log in to the [playPORTAL Partner Dashboard](https://partner.iokids.net)
+	* After confirmation, log in to the [playPORTAL Partner Dashboard](https://partner.playportal.io)
 	* In the left navigation bar click on the <b>Apps</b> tab.
 	* In the <b>Apps</b> panel, click on the "+ Add App" button.
 	* Add an icon, name & description for your app.
@@ -26,7 +26,7 @@ The playPORTAl service requires setting up your app in the playPORTAL.
 
 	* Tap "Client IDs & Secrets"
 	* Tap "Generate Client ID"
-	* Copy these and save them to a secure place accessible by your app. Be careful not to share them or store them in public version control - they uniquely identify your app and grant the permissions to your app as defined in the [playPORTAL Partner Dashboard](https://partner.iokids.net).
+	* Copy these and save them to a secure place accessible by your app. Be careful not to share them or store them in public version control - they uniquely identify your app and grant the permissions to your app as defined in the [playPORTAL Partner Dashboard](https://partner.playportal.io).
   </br>
 
 * ### <b>Step 4:</b> Add your Redirect URI
@@ -47,7 +47,7 @@ The playPORTAl service requires setting up your app in the playPORTAL.
     
     * Add the following to your app/module level build.gradle:
     ```java
-    implementation 'com.dynepic.ppsdk_android:ppsdk_android:0.0.7@aar'
+    implementation 'com.dynepic.ppsdk_android:ppsdk_android:0.0.10@aar'
     ```
 
 ## Using the playPORTAL SDK
