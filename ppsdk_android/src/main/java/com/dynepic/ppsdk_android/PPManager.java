@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.ImageView;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -21,6 +22,7 @@ import com.dynepic.ppsdk_android.utils._WebApi;
 
 import com.google.gson.JsonObject;
 import com.squareup.picasso.OkHttp3Downloader;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -149,8 +151,10 @@ public class PPManager {
 		} else if (env == "DEV") {
 			devPrefs.setBaseUrl("https://develop-api.goplayportal.com");
 		} else {
-			devPrefs.setBaseUrl("https://sandbox.iokids.net");
+//			devPrefs.setBaseUrl("https://sandbox.iokids.net");
+			devPrefs.setBaseUrl("https://sandbox.playportal.io");
 		}
+		Log.d("using baseUrl:", devPrefs.getBaseUrl());
 
 		webApi  = new _WebApi(devPrefs, this::authListener, (status) -> {
 			Log.d("_WebApi init'd status:", status.toString());
@@ -160,6 +164,7 @@ public class PPManager {
 
 	public void logout() {
 		devPrefs.clear();
+		userPrefs.clear();
     }
 
 	public Boolean isAuthenticated() {
@@ -345,6 +350,10 @@ public class PPManager {
 	// ------------------------------------------------------------------------------
 	// Methods to support image download (e.g. user profile image)
 	// ------------------------------------------------------------------------------
+	public String getTestImageParms() {
+		return devPrefs.getBaseUrl() + "/image/v1/static/12355.jpg";
+	}
+
 	public String getPicassoParms() {
 //		return "https://sandbox.iokids.net/user/v1/my/profile/picture";
 		return devPrefs.getBaseUrl() + "/user/v1/my/profile/picture";
