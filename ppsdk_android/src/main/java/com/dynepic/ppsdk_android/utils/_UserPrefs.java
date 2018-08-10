@@ -144,7 +144,10 @@ public class _UserPrefs {
     }
 
     public void clear(){
-        _prefsEditor.clear().commit();
+        setUserId("");
+        setUserName("");
+        setHandle("");
     }
+
 
 }

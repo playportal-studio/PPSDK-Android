@@ -116,7 +116,11 @@ public class _DevPrefs {
     }
 
     public void clear(){
-        _prefsEditor.clear().commit();
+        setClientAccessToken("");
+        setClientRefreshToken("");
+        setBaseUrl("https://unknown");
+        setClientId("");
+        setClientSecret("");
     }
 
 }
