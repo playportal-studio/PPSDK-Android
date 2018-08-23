@@ -5,16 +5,16 @@ playPORTAL<sup>TM</sup> provides a service to app developers for managing users 
 ## Getting Started
 The playPORTAl service requires setting up your app in the playPORTAL.
 
-* ### <b>Step 1:</b> Create playPORTAL Partner Account
+* ### <b>Step 1:</b> Create playPORTAL Studio Account
 
-	* Navigate to [playPORTAL Partner Dashboard](https://partner.playportal.io)
+	* Navigate to [playPORTAL Studio Dashboard](https://partner.playportal.io)
 	* Click on <b>Sign Up For Developer Account</b>
 	* After creating your account, email us at [info@playportal.io](mailto:info@playportal.io?subject=Developer%20Sandbox%20Access%20Request) to verify your account.
   </br>
 
 * ### <b>Step 2:</b> Register your App with playPORTAL
 
-	* After confirmation, log in to the [playPORTAL Partner Dashboard](https://partner.playportal.io)
+	* After confirmation, log in to the [playPORTAL Studio Dashboard](https://partner.playportal.io)
 	* In the left navigation bar click on the <b>Apps</b> tab.
 	* In the <b>Apps</b> panel, click on the "+ Add App" button.
 	* Add an icon, name & description for your app.
@@ -26,13 +26,13 @@ The playPORTAl service requires setting up your app in the playPORTAL.
 
 	* Tap "Client IDs & Secrets"
 	* Tap "Generate Client ID"
-	* Copy these and save them to a secure place accessible by your app. Be careful not to share them or store them in public version control - they uniquely identify your app and grant the permissions to your app as defined in the [playPORTAL Partner Dashboard](https://partner.playportal.io).
+	* Copy these and save them to a secure place accessible by your app. Be careful not to share them or store them in public version control - they uniquely identify your app and grant the permissions to your app as defined in the [playPORTAL Studio Dashboard](https://partner.playportal.io).
   </br>
 
 * ### <b>Step 4:</b> Add your Redirect URI
 
 	* Add a [Custom URL Scheme for your app](https://developer.apple.com/documentation/uikit/core_app/communicating_with_other_apps_using_custom_urls?language=objc)
-	* From the [playPORTAL Partner Dashboard](https://partner.iokids.net) navigate to your app and tap <b>Registered Redirect URIs</b>
+	* From the [playPORTAL Studio Dashboard](https://partner.iokids.net) navigate to your app and tap <b>Registered Redirect URIs</b>
 	* Enter the your Custom URL Scheme
   </br>
 
