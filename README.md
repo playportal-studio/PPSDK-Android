@@ -1,20 +1,19 @@
+![](./readmeAssets/studio.png)
 # <b>playPORTAL Android (Java) SDK</b></br>
-playPORTAL<sup>TM</sup> provides a service to app developers for managing users of all ages and the data associated with the app and the app users, while providing compliance with required COPPA laws and guidelines. The playPORTAL service is easily accessed via our SDKs, this doc describes the Java SDK for use in Android apps.
-
+##### playPORTAL Studio<sup>TM</sup> provides a service to app developers for managing users of all ages and the data associated with the app and the app users, while providing compliance with required COPPA laws and guidelines.
 
 ## Getting Started
-The playPORTAl service requires setting up your app in the playPORTAL.
 
 * ### <b>Step 1:</b> Create playPORTAL Studio Account
 
-	* Navigate to [playPORTAL Studio Dashboard](https://partner.playportal.io)
-	* Click on <b>Sign Up For Developer Account</b>
+	* Navigate to [playPORTAL Studio](https://studio.playportal.io)
+	* Click on <b>Sign Up For FREE Accountt</b>
 	* After creating your account, email us at [info@playportal.io](mailto:info@playportal.io?subject=Developer%20Sandbox%20Access%20Request) to verify your account.
   </br>
 
 * ### <b>Step 2:</b> Register your App with playPORTAL
 
-	* After confirmation, log in to the [playPORTAL Studio Dashboard](https://partner.playportal.io)
+	* After confirmation, log in to the [playPORTAL Studio](https://studio.playportal.io)
 	* In the left navigation bar click on the <b>Apps</b> tab.
 	* In the <b>Apps</b> panel, click on the "+ Add App" button.
 	* Add an icon, name & description for your app.
@@ -26,14 +25,14 @@ The playPORTAl service requires setting up your app in the playPORTAL.
 
 	* Tap "Client IDs & Secrets"
 	* Tap "Generate Client ID"
-	* Copy these and save them to a secure place accessible by your app. Be careful not to share them or store them in public version control - they uniquely identify your app and grant the permissions to your app as defined in the [playPORTAL Studio Dashboard](https://partner.playportal.io).
+	* The values generated will be used in 'Step 5'.
   </br>
 
-* ### <b>Step 4:</b> Add your Redirect URI
+* ### <b>Step 4:</b> Add a "Registered Redirect URI"
 
-	* Add a [Custom URL Scheme for your app](https://developer.apple.com/documentation/uikit/core_app/communicating_with_other_apps_using_custom_urls?language=objc)
-	* From the [playPORTAL Studio Dashboard](https://partner.iokids.net) navigate to your app and tap <b>Registered Redirect URIs</b>
-	* Enter the your Custom URL Scheme
+	* Tap "Registered Redirect URIs"
+	* Tap "+ Add Redirect URI"
+	* Enter your app's redirect uri (e.g. - helloworld://redirect) in to the prompt and click "Submit".
   </br>
 
 * ### <b>Step 5:</b> Install the SDK
