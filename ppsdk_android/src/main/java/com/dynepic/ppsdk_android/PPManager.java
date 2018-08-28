@@ -198,9 +198,24 @@ public class PPManager {
 	}
 
 
+	public void loadImageByID(Context context, String imageId, ImageView intoImage) {
+		Picasso p = new Picasso.Builder(context).downloader(ppManager.imageDownloader()).build();
+		p.load(getBaseUrl() + "/image/v1/static/" + imageId).into(intoImage, new com.squareup.picasso.Callback() {
+			@Override
+			public void onSuccess() {
+				Log.d("Picasso ", "success");
+			}
+
+			@Override
+			public void onError(Exception e) {
+				Log.e("Picasso ", "error:" + e);
+			}
+		});
+	}
+
 	public void loadImageByID(Context context, String imageId, ImageView intoImage, int width, int height) {
 		Picasso p = new Picasso.Builder(context).downloader(ppManager.imageDownloader()).build();
-		p.load(getBaseUrl()+"/image/v1/static/" + imageId).resize(width, height).into(intoImage, new com.squareup.picasso.Callback() {
+		p.load(getBaseUrl() + "/image/v1/static/" + imageId).resize(width, height).into(intoImage, new com.squareup.picasso.Callback() {
 			@Override
 			public void onSuccess() {
 				Log.d("Picasso ", "success");
