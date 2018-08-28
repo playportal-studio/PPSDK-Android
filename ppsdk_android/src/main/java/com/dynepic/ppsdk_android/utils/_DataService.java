@@ -21,6 +21,7 @@ import com.dynepic.ppsdk_android.utils._WebApi;
 
 
 public class _DataService {
+	private static final String TAG = "_DataService";
 	public _WebApi webApi;
 
 	public _DataService(_WebApi w) {
@@ -45,12 +46,12 @@ public class _DataService {
 				@Override
 				public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
 					if((response.code() == 200) || (response.code() == 409))
-						Log.d("createBucket response: ", String.valueOf(response.body()));
+						Log.d(TAG,"createBucket response: " + String.valueOf(response.body()));
 						cb.f(response.body(), null);
 					}
 				@Override
 				public void onFailure(Call<JsonObject> call, Throwable t) {
-					Log.e("createBucket error:", "failed with " + t);
+					Log.e(TAG,"createBucket error:" + "failed with " + t);
 					cb.f(null, t.getMessage());
 				}
 			});
@@ -61,7 +62,7 @@ public class _DataService {
 
 	public void readBucket(String bucketName, String key, Context CONTEXT, _CallbackFunction._Data cb)
 	{
-		Log.d("readBucket: ", bucketName + " and key:" + key);
+		Log.d(TAG,"readBucket: " + bucketName + " and key:" + key);
 		Boolean readSuccess = true;
 		com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
 
@@ -81,7 +82,7 @@ public class _DataService {
 							JsonObject jdata = response.body().getAsJsonObject("data");
 							Log.d("jdata.get(key):", jdata.get(key).toString());
 							if (jdata.get(key).isJsonPrimitive()) {
-								Log.d("key is for a primitive... ", "synthesizing JsonObject");
+								Log.d(TAG, "key is for a primitive... " + "synthesizing JsonObject");
 								JsonObject newjo = new JsonObject();
 								newjo.add(key, jdata.get(key));
 								cb.f(newjo, null);
@@ -95,14 +96,14 @@ public class _DataService {
 				}
 				@Override
 				public void onFailure(Call<JsonObject> call, Throwable t) {
-					Log.e("readBucket error:", "failed with " + t + " on bucket:" + bucketName);
+					Log.e(TAG,"readBucket error:" + "failed with " + t + " on bucket:" + bucketName);
 					cb.f(null, t.getMessage());
 				}
 			});
 		}
 	}
 	public void write(String bucketName, String key, Boolean value, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
-		Log.d("writeBucket", "bucket: " + bucketName + " key:" + key + " value:" + value);
+		Log.d(TAG,"writeBucket" + "bucket: " + bucketName + " key:" + key + " value:" + value);
 		if (bucketName != null && key != null) {
 			com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
 			String btoken = "Bearer " + devPrefs.getClientAccessToken();
@@ -117,7 +118,7 @@ public class _DataService {
 		}
 	}
 	public void write(String bucketName, String key, String value, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
-		Log.d("writeBucket", "bucket: " + bucketName + " key:" + key + " value:" + value);
+		Log.d(TAG,"writeBucket" + "bucket: " + bucketName + " key:" + key + " value:" + value);
 		if (bucketName != null && key != null) {
 			com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
 			String btoken = "Bearer " + devPrefs.getClientAccessToken();
@@ -132,7 +133,7 @@ public class _DataService {
 		}
 	}
 	public void write(String bucketName, String key, Integer value, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
-		Log.d("writeBucket", "bucket: " + bucketName + " key:" + key + " value:" + value);
+		Log.d(TAG,"writeBucket" + "bucket: " + bucketName + " key:" + key + " value:" + value);
 		if (bucketName != null && key != null) {
 			com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
 			String btoken = "Bearer " + devPrefs.getClientAccessToken();
@@ -148,7 +149,7 @@ public class _DataService {
 	}
 
 	public void write(String bucketName, String key, JsonObject value, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
-		Log.d("writeBucket", "bucket: " + bucketName + " key:" + key + " value:" + value);
+		Log.d(TAG,"writeBucket" + "bucket: " + bucketName + " key:" + key + " value:" + value);
 		if (bucketName != null && key != null && value != null) {
 			com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
 			String btoken = "Bearer " + devPrefs.getClientAccessToken();
@@ -167,20 +168,20 @@ public class _DataService {
 		com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
 		String btoken = "Bearer " + devPrefs.getClientAccessToken();
 		Call<JsonObject> call = webApi.getApi(devPrefs.getBaseUrl()).writeData(body, btoken);
-		Log.d("write body: ", body.toString());
+		Log.d(TAG,"write body: " + body.toString());
 			call.enqueue(new Callback<JsonObject>() {
 				@Override
 				public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
 					if(response.code() == 200) {
 						JsonObject jdata = response.body().getAsJsonObject("data");
-						Log.d("writeBucket res: ", String.valueOf(response.body()));
-						cb.f(null, null);
+						Log.d(TAG,"writeBucket res: " + String.valueOf(response.body()));
+						cb.f(jdata, null);
 					}
 				}
 
 				@Override
 				public void onFailure(Call<JsonObject> call, Throwable t) {
-					Log.e("writeBucket error:", "failed with " + t);
+					Log.e(TAG,"writeBucket error:" + "failed with " + t);
 					cb.f(null, t.getMessage());
 				}
 			});
