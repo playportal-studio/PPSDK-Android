@@ -40,13 +40,13 @@
     * Add the following to your project level build.gradle:
     ```java
     repositories {
-        maven{url "https://dynepic.bintray.com/maven"}
+        maven{url "https://playportal-studio.bintray.com/maven"}
     }
     ```
     
     * Add the following to your app/module level build.gradle:
     ```java
-    implementation 'com.dynepic.ppsdk_android:ppsdk_android:0.0.10@aar'
+    implementation 'com.dynepic.ppsdk_android:ppsdk_android:0.0.12@aar'
     ```
 
 ## Using the playPORTAL SDK
@@ -75,7 +75,11 @@ The playPORTAL manager provides the SDK services:
   
   The SDK uses lambda functions for all async operations. 
   
-#### Initialize the playPORTAL manager (PPManager)
+  
+
+## Starting up the SDK
+
+### Initialize the playPORTAL manager (PPManager)
 
 The PPManager needs to be initialized before use. This can be done in your startup activity that's run prior to any 
 operations being requested from the playPORTAL cloud. The example belows shows a code snippet in a "StartupActivity.java" 
@@ -90,8 +94,6 @@ onCreate() method that performs all necessary init.
         PPManager ppManager = PPManager.getInstance();
         ppManager.setContextAndActivity(CONTEXT, ACTIVITY_CONTEXT);
 
-Add an "authentication listener". This method in your app will be invoked on changes in authentication status (NB: shown here as a lambda function.)
-```aidl
         ppManager.addAuthListener((Boolean isAuthd) -> {
             // add auth listener - in this case a lambda function that presents a login dialog if user is not auth'd
             if (!isAuthd) {
@@ -100,15 +102,9 @@ Add an "authentication listener". This method in your app will be invoked on cha
                 ACTIVITY_CONTEXT.finish();
             }
         });
-```
-
-
-Next, call the configure method and then check if this user is already auth'd into your app and take appropriate action (simple example shown):
-```aidl
 
         //Configure SDK and check auth state
-        ppManager.configure(
-                "your-client-id",
+        ppManager.configure("your-client-id",
                 "your-client-secret",
                 "appname://redirect",
                 "SANDBOX",
@@ -127,17 +123,6 @@ Next, call the configure method and then check if this user is already auth'd in
                 });
     }
 ```
-
-  
-#### SSO Login:
-The SSO Login requires an intent for where you intend to send the user after login. It is called from the PPManager using showSSOLogin().
-
-Example:
-```aidl
-Intent intent = new Intent(CONTEXT, yourActivity.class);
-ppManager.showSSOLogin(intent);
-```
-
 
 ## Using the SDK
 
@@ -165,18 +150,8 @@ The logged in user's profile image is available and can be easily captured into 
 ```aidl
    
     ImageView imageView = (ImageView) findViewById(R.id.profile_iv_filled); 
-    Picasso p = new Picasso.Builder(CONTEXT).downloader(ppManager.imageDownloader()).build();
-    p.load(ppManager.getPicassoParms()).resize(450, 450).into(imageView, new Callback() {
-        @Override
-        public void onSuccess() {
-            Log.d("Picasso ", "success");
-        }
+    ppManager.loadImageByID(CONTEXT, userData.getProfilePic(),imageView);
 
-        @Override
-        public void onError(Exception e) {
-            Log.e("Picasso ", "error:" + e);
-        }
-    });
 ```
 
 ### Friends
@@ -205,21 +180,6 @@ can be created as needed. All data read/written must be JSON. The read/write met
 and supported marshalling routines. 
 
 #### Read
-
-To read data from the lightning db, use the data() read method.
-```aidl
-	public void read(String bucketname, String key, _CallbackFunction._Data cb)
-
-	  parms:
-	  String bucketname - the name used to create the bucket or userData.myData() for user's private data or userData.myGlobalData() for app global data.
-      String key - key in Key:Value pair
-      _CallbackFunction._Data cb - the callback function to be invoked on completion of the read (success or failure) with the method signature
-      
-          public void f(@Nullable JsonObject data, @Nullable String error);
-          Alternatively, this callback can be implemented as a lambda function (as shown in the examples). 
-```      
-
-Example: read from user's private data at "key".
 ```aidl
     ppManager.data().read(userData.myData(), key, (JsonObject data, String e) -> {
         if (e == null) {
@@ -228,28 +188,9 @@ Example: read from user's private data at "key".
             Log.e("Data read error:", e);
         }
     });
-    
-    NB - If a primitive type is read, then the key:value pair (where value is a primitive in { Boolean, Integer, String } will be promoted to a JsonObject, i.e. { key:value } and returned as such. To extract the value, do a "get" on the key.
 ```
 
 #### Write
-To write data to the lightning db, use the data() write method, with the appropriate signature for the data being written.
-
-```aidl
-		public void write(String bucketname, String key, JsonObject value, _CallbackFunction._Data cb )
-
-parms:
-	  String bucketname - the name used to create the bucket or userData.myData() for user's private data or userData.myGlobalData() for app global data.
-      String key - key in Key:Value pair
-      JsonObject value - object to store in lightning db. Can also be one of { Boolean, Integer, String } which will use one the matching method signature.
-      
-      _CallbackFunction._Data cb - the callback function to be invoked on completion of the write (success or failure) with the method signature:
-      
-          public void f(@Nullable JsonObject data, @Nullable String error);
-          Alternatively, this callback can be implemented as a lambda function (as shown in the examples). The callback data can be ignored, but the error should be checked.
-```
-
-Example: write a JsonObject "jo" to "key" in user's private data store.
 
 ```aidl    
     JsonObject jo;
@@ -264,5 +205,94 @@ Example: write a JsonObject "jo" to "key" in user's private data store.
 ```
 
 
+#### Images
+User profile pics, friends profile pics, and all other images can be loaded simply by invoking one of the following methods:
+
+```aidl
+	public void loadImageByID(Context context, String imageId, ImageView intoImage);
+
+or to have the image resized into the provided view, intoImage:
+
+	public void loadImageByID(Context context, String imageId, ImageView intoImage, int width, int height);
+
+NB - conflicting constraints will be resolved by the Android ImageView. 
+```
 
 
+#### Push Notifications
+
+Push notifications allow apps to receive messages even when the app is not currently active. 
+These notifications are typically used to deliver alerts to the app user, allowing the app 
+designer a convenient and compelling way to deliver engagement. In the playPORTAL environment,
+
+* Sending push notifications
+Push notifications can be sent by:
+  - the management console (either to a single or multiple app users)
+  - app users
+
+In both cases, the notification received will appear the same, just the source will 
+be different.
+
+   
+* Receiving push notifications
+Configuration is required to enable receipt of push notifications, much of this is handled by
+the playPORTAL SDK.
+
+##### Configuration / Setup
+The following steps must be performed to enable push notifications:
+
+* Register your app with push notifications enabled at the Google Developer console. Download
+the FCM key and the google-services.json from the portal.
+
+* Upload the FCM key into the playPORTAL studio portal under the app definition screen.
+
+* Add the google-services.json into your project's "app" directory (i.e. at the same level as 
+your app src directory).
+
+* Add the following statement at the end of your app 'build.gradle' file:
+
+```aidl
+apply plugin: 'com.google.gms.google-services'
+```
+
+Note: Depending on your app implementation, you will likely need a JSON converter package. 
+Google's Gson is a solid package as is Jackson's package; the primary choice dependent on 
+whether you prefer auto marshalling of JSONObject to/from POJO (use Jackson), or an a less
+POJO centric approach (use Gson).
+
+
+Your app level build.gradle will then need to contain something like:
+
+```aidl
+  dependencies {
+     ...
+         implementation 'com.google.code.gson:gson:2.8.4'
+
+and/or
+
+         implementation 'com.fasterxml.jackson.core:jackson-core:2.9.5'
+         implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.5'
+    ...
+    }
+```
+
+##### Configuring, Sending and Receiving Push Notifications
+In order to bind push notifications to your app, push notifications must be enabled by invoking
+the following method:
+```aidl
+	public void enablePushNotifications();
+```	
+
+Receipt of push notificdations can then begin, i.e. the playPORTAL studio console, and users of
+your app can send notifications among users of your app.
+
+In order to send a notification to another user:
+
+```aidl
+	public void sendPushNotification(String msg, String receiverId, _CallbackFunction._GenericWithError cb);
+
+	where:
+	   msg - String to be sent to remote user
+	   receiverId - id of user to target with the push (id can be gotten from friends list as friend.getUserId())
+	   cb - fnx to receive status of push notification, with invocation (Boolean status, String error) -> {}
+ 
