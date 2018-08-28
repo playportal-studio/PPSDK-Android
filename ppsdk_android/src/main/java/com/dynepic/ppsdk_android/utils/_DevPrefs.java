@@ -23,6 +23,7 @@ public class _DevPrefs {
     private String CLIENT_REFRESH = "CLIENT_REFRESH";
     private String TOKEN_EXPIRATION_TIME = "TOKEN_EXPIRATION_TIME";
     private String APP_NAME = "APP_NAME";
+    private String DEVICE_TOKEN = "DEVICE_TOKEN";
 
     private String cachedAccessToken = "";
 
@@ -30,6 +31,14 @@ public class _DevPrefs {
     public _DevPrefs(Context context) {
         this._sharedPrefs = context.getSharedPreferences("ppsdk-dev-preferences", Context.MODE_PRIVATE);
         this._prefsEditor = _sharedPrefs.edit();
+    }
+
+    public String getDeviceToken() {
+        return _sharedPrefs.getString(DEVICE_TOKEN, "");
+    }
+    public void setDeviceToken(String value) {
+        _prefsEditor.putString(DEVICE_TOKEN, value);
+        _prefsEditor.apply();
     }
 
     public String getClientId() {
