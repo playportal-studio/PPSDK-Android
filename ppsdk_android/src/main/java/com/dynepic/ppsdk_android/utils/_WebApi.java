@@ -158,7 +158,11 @@ public class _WebApi {
 		@GET("/user/v1/static/{id}")
 		Call<Image> downloadImage(@Path("id") String imageId, @Header("Authorization") String authorization);
 
+		@PUT("/notifications/v1/register")
+		Call<JsonObject> registerDeviceToken(@Body JsonObject bodyparms, @Header("Authorization") String authorization);
 
+		@PUT("/notifications/v1")
+		Call<JsonObject> send(@Body JsonObject bodyparms, @Header("Authorization") String authorization);
 	}
 
 
@@ -177,6 +181,7 @@ public class _WebApi {
 	public OkHttp3Downloader createDownloader() {
 		OkHttpClient okHttpClient = new OkHttpClient.Builder()
 				.addInterceptor(new BasicAuthInterceptor())
+				.addInterceptor(ppCustomInterceptor)
 				.build();
 		return new OkHttp3Downloader(okHttpClient);
 	}
