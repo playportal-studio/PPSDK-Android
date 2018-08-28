@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ----
+### 0.0.12 - 2018-08-28
+##### Changed
+- Fixed issue with image load failing on auth fail
+- Support for minSdkVersion 24 (down from 26)
+- Changed some logging
+
+##### Added
+- Added push notifications using FCM
+- Added image load convenience method
+- Added JSONObject write bucket method (for convenience on POJO / JSON serialization) 
+
+### 0.0.11 - 2018-08-25
+##### Changed
+- Migrated jar file to a new Maven repo.
+
 ### 0.0.9 - 2018-08-08
 ##### Changed
 - disabled minification / obfuscation via build.gradle
