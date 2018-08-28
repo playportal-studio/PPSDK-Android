@@ -3,6 +3,7 @@ package com.dynepic.ppsdk_android;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -24,10 +25,13 @@ import com.google.gson.JsonObject;
 import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ppsdk_android.utils._Notifications;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -97,16 +101,19 @@ import static java.lang.Thread.sleep;
 
 // PPManager is a singleton
 public class PPManager {
+	private static final String TAG = "PPManager";
+
 	private Context context;
 	private Activity activity;
 	private _DevPrefs devPrefs;
 	private _UserPrefs userPrefs;
 	private UserHandler userHandler;
 	public _WebApi webApi;
+	public _Notifications notifications;
 	private _CallbackFunction._Auth authListenerFnx;
 
 	public void setContextAndActivity(Context c, Activity a) {
-		Log.d("PPManager:", "Context:" + c.getPackageName() + " Activity:"+ a.getCallingPackage());
+		Log.d(TAG, "Context:" + c.getPackageName() + " Activity:"+ a.getCallingPackage());
 		context = c;
 		activity = a;
 		devPrefs = new _DevPrefs(context);
@@ -118,20 +125,30 @@ public class PPManager {
       private static PPManager ppManager = new PPManager();
       public static PPManager getInstance( ) { return ppManager; }
       private PPManager() {  // A private Constructor prevents any other class from instantiating.
-		  Log.d("PPManager:", "private constructor invoked");
+		  Log.d(TAG, "private constructor invoked");
       }
 
+
+	public void enablePushNotifications() {
+      	notifications = new _Notifications(webApi, context, (Boolean state, String error) -> {
+      		Log.d(TAG, "enablePushNotification init state:" + state + " error: " + error);
+		});
+	}
+
+	public void sendPushNotification(String msg, String receiverId, _CallbackFunction._GenericWithError cb) {
+		notifications.send(msg, receiverId, cb);
+	}
 
 	// --------------------------------------------------------------------------------
 	// Auth
 	// invoke apps authListener on an auth status change
 	// --------------------------------------------------------------------------------
 	public void authListener(Boolean isAuthd) {
-		Log.d("authListener invoked: ", isAuthd.toString());
+		Log.d(TAG,"authListener invoked: " + isAuthd.toString());
 		if(authListenerFnx != null) authListenerFnx.f(isAuthd);
 	}
 	public void addAuthListener(_CallbackFunction._Auth f) {
-		Log.d("authListener added: ", f.toString());
+		Log.d(TAG,"authListener added: " + f.toString());
 		authListenerFnx = f;
 	}
 
@@ -154,12 +171,21 @@ public class PPManager {
 //			devPrefs.setBaseUrl("https://sandbox.iokids.net");
 			devPrefs.setBaseUrl("https://sandbox.playportal.io");
 		}
-		Log.d("using baseUrl:", devPrefs.getBaseUrl());
+		Log.d(TAG,"using baseUrl:" + devPrefs.getBaseUrl());
 
 		webApi  = new _WebApi(devPrefs, this::authListener, (status) -> {
-			Log.d("_WebApi init'd status:", status.toString());
+			Log.d(TAG,"_WebApi init'd status:" + status.toString());
 			cb.f(status);
 		});
+	}
+
+	public String getBaseUrl() {
+		try {
+			return devPrefs.getBaseUrl();
+		} catch(Exception e) {
+			Log.e(TAG, "attempting to getBaseUrl before playPORTAL initialized.");
+			throw e;
+		}
 	}
 
 	public void logout() {
@@ -297,11 +323,11 @@ public class PPManager {
 		_DevPrefs settings = new _DevPrefs(context);
 		String btoken = "Bearer " + settings.getClientAccessToken();
 		Log.i("SSO_LOGIN", "Requesting User Data");
-		Log.i("SSO_LOGIN base url:", devPrefs.getBaseUrl() + " app:" + devPrefs.getAppName());
+		Log.i("SSO_LOGIN base url:", getBaseUrl() + " app:" + devPrefs.getAppName());
 
 
 		//region Call User Data
-		Call<User> call = webApi.getApi(devPrefs.getBaseUrl()).getUser(btoken);
+		Call<User> call = webApi.getApi(getBaseUrl()).getUser(btoken);
 		call.enqueue(new Callback<User>() {
 			@Override
 			public void onResponse(Call<User> call, Response<User> response) {
@@ -311,25 +337,25 @@ public class PPManager {
 					User userObject = response.body();
 					userHandler.populateUserData(userObject);
 					if(!userHandler.getHandle().equals("")){
-						Log.i("SSO_LOGIN", "UserData Retrieved\n"+ userHandler.toString());
+						Log.i(TAG,"SSO_LOGIN" + "UserData Retrieved\n"+ userHandler.toString());
 						try{
 							context.startActivity(NEXT_INTENT);
 							ACTIVITY_CONTEXT.finish();
 							ssoLoginFragment.dismiss();
 						}catch (Exception e){
 							e.printStackTrace();
-							Log.e(" SSO_LOGIN_ERR","Did you specify context, or an intent for your next activity?");
-							Log.e(" SSO_LOGIN_ERR","Error in class: "+ACTIVITY_CONTEXT.getLocalClassName());
-							Log.e(" SSO_LOGIN_ERR","Intent is: "+NEXT_INTENT);
+							Log.e(TAG," SSO_LOGIN_ERR" +"Did you specify context, or an intent for your next activity?");
+							Log.e(TAG," SSO_LOGIN_ERR" +"Error in class: "+ACTIVITY_CONTEXT.getLocalClassName());
+							Log.e(TAG," SSO_LOGIN_ERR" +"Intent is: "+NEXT_INTENT);
 						}
 
 					}
 				} else {
 					//Dialogs.ShowDialog(LoginError())
 					//Dialogs.ShowDialog(SecurityError())
-					Log.e(" SSO_LOGIN_ERR","Error getting user data.");
-					Log.e(" SSO_LOGIN_ERR","Response code is : "+response.code());
-					Log.e(" SSO_LOGIN_ERR","Response message is : "+response.message());
+					Log.e(TAG," SSO_LOGIN_ERR" + "Error getting user data.");
+					Log.e(TAG," SSO_LOGIN_ERR" + "Response code is : "+response.code());
+					Log.e(TAG," SSO_LOGIN_ERR" + "Response message is : "+response.message());
 					//Kick back to login
 
 				}
@@ -337,7 +363,7 @@ public class PPManager {
 
 			@Override
 			public void onFailure(Call<User> call, Throwable t) {
-				Log.e("SSO_LOGIN_ERR", "Request failed with throwable: " + t);
+				Log.e(TAG,"SSO_LOGIN_ERR" + "Request failed with throwable: " + t);
 				//Call Failed. Try again
 				//Kick back to login
 			}
@@ -351,12 +377,12 @@ public class PPManager {
 	// Methods to support image download (e.g. user profile image)
 	// ------------------------------------------------------------------------------
 	public String getTestImageParms() {
-		return devPrefs.getBaseUrl() + "/image/v1/static/12355.jpg";
+		return getBaseUrl() + "/image/v1/static/12355.jpg";
 	}
 
 	public String getPicassoParms() {
 //		return "https://sandbox.iokids.net/user/v1/my/profile/picture";
-		return devPrefs.getBaseUrl() + "/user/v1/my/profile/picture";
+		return getBaseUrl() + "/user/v1/my/profile/picture";
 	}
 
 	public OkHttp3Downloader imageDownloader() {
@@ -380,7 +406,7 @@ public class PPManager {
 		}
 
 		public ArrayList<User> get(_CallbackFunction._Friends cb) {
-			Call<ArrayList<User>> friendsCall = webApi.getApi(devPrefs.getBaseUrl()).getFriends(devPrefs.getClientAccessToken());
+			Call<ArrayList<User>> friendsCall = webApi.getApi(getBaseUrl()).getFriends(devPrefs.getClientAccessToken());
 			friendsCall.enqueue(new Callback<ArrayList<User>>() {
 				@Override
 				public void onResponse(Call<ArrayList<User>> call, Response<ArrayList<User>> response) {
@@ -389,15 +415,15 @@ public class PPManager {
 						friendsList = response.body();
 						cb.f(friendsList, null);
 					} else {
-						Log.e(" GET_FRIENDS_ERR", "Error getting friends data.");
-						Log.e(" GET_FRIENDS_ERR", "Response code is : " + response.code());
-						Log.e(" GET_FRIENDS_ERR", "Response message is : " + response.message());
+						Log.e(TAG," GET_FRIENDS_ERR" + "Error getting friends data.");
+						Log.e(TAG," GET_FRIENDS_ERR" +  "Response code is : " + response.code());
+						Log.e(TAG," GET_FRIENDS_ERR" + "Response message is : " + response.message());
 					}
 				}
 
 				@Override
 				public void onFailure(Call<ArrayList<User>> call, Throwable t) {
-					Log.e("GET_FRIENDS_ERR", "Request failed with throwable: " + t);
+					Log.e(TAG,"GET_FRIENDS_ERR" + "Request failed with throwable: " + t);
 				}
 			});
 			return friendsList;
@@ -420,42 +446,48 @@ public class PPManager {
 				appDataService = new _DataService(webApi);
 				createBucket(userPrefs.myData(devPrefs.getAppName()), new ArrayList<String>(), false, context, (JsonObject value, String error) -> {
 					if (error != null) {
-						Log.e("AppData create error:", error + " for bucket: " + userPrefs.myData(devPrefs.getAppName()));
+						Log.e(TAG,"AppData create error:" + error + " for bucket: " + userPrefs.myData(devPrefs.getAppName()));
 					} else {
-						Log.d("Created AppData", userPrefs.myData(devPrefs.getAppName()));
+						Log.d(TAG,"Created AppData" + userPrefs.myData(devPrefs.getAppName()));
 					}
 				});
 				createBucket(userPrefs.globalData(devPrefs.getAppName()), new ArrayList<String>(), true, context, (JsonObject value, String error) -> {
 					if (error != null) {
-						Log.e("GlobalAppData create error:", error + " for bucket: " + userPrefs.globalData(devPrefs.getAppName()));
+						Log.e(TAG,"GlobalAppData create error:" + error + " for bucket: " + userPrefs.globalData(devPrefs.getAppName()));
 					} else {
-						Log.d("Created GlobalAppData", userPrefs.globalData(devPrefs.getAppName()));
+						Log.d(TAG,"Created GlobalAppData" + userPrefs.globalData(devPrefs.getAppName()));
 					}
 				});
 			}
 		}
 
 		public void read(String bucketname, String key, _CallbackFunction._Data cb)  {
-			Log.d("DataService readData bucket:", bucketname + " key:" + key);
+			Log.d(TAG,"DataService readData bucket:" + bucketname + " key:" + key);
 			appDataService.readBucket(bucketname, key, context, cb);
 		}
 
 		public void write(String bucketname, String key, Boolean value, _CallbackFunction._Data cb ) {
-			Log.d("write boolean:", value.toString());
+			Log.d(TAG,"write boolean:" + value.toString());
 			appDataService.write(bucketname, key, value, false, context, cb);
 		}
 		public void write(String bucketname, String key, String value, _CallbackFunction._Data cb ) {
-			Log.d("write string:", value);
+			Log.d(TAG,"write string:" + value);
 			appDataService.write(bucketname, key, value, false, context, cb);
 		}
 		public void write(String bucketname, String key, Integer value, _CallbackFunction._Data cb ) {
-			Log.d("write Integer:", value.toString());
+			Log.d(TAG,"write Integer:" + value.toString());
 			appDataService.write(bucketname, key, value, false, context, cb);
 		}
 		public void write(String bucketname, String key, JsonObject value, _CallbackFunction._Data cb ) {
-			Log.d("write JsonObject:", value.toString());
+			Log.d(TAG, "write JsonObject:" + value.toString());
 			appDataService.write(bucketname, key, value, false, context, cb);
 		}
+		public void write(String bucketname, String key, JSONObject value, _CallbackFunction._Data cb ) {
+			Log.d(TAG, "write JsonObject:" + value.toString());
+			appDataService.write(bucketname, key, value.toString(), false, context, cb);
+		}
+
+
 
 		public void createBucket(String bucketname, ArrayList<String> bucketUsers, Boolean isPublic, Context CONTEXT, _CallbackFunction._Data cb) {
 			appDataService.createBucket(bucketname, bucketUsers, isPublic, CONTEXT, cb);
