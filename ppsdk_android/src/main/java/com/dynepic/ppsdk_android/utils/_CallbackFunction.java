@@ -24,5 +24,9 @@ public interface _CallbackFunction {
 	public interface _Generic {
 		public void f(Boolean state);
 	}
+
+	public interface _GenericWithError {
+		public void f(Boolean state, @Nullable String error);
+	}
 }
 
