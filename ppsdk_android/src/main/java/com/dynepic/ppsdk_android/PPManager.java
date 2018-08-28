@@ -197,6 +197,22 @@ public class PPManager {
 		return devPrefs.exists();
 	}
 
+
+	public void loadImageByID(Context context, String imageId, ImageView intoImage, int width, int height) {
+		Picasso p = new Picasso.Builder(context).downloader(ppManager.imageDownloader()).build();
+		p.load(getBaseUrl()+"/image/v1/static/" + imageId).resize(width, height).into(intoImage, new com.squareup.picasso.Callback() {
+			@Override
+			public void onSuccess() {
+				Log.d("Picasso ", "success");
+			}
+
+			@Override
+			public void onError(Exception e) {
+				Log.e("Picasso ", "error:" + e);
+			}
+		});
+	}
+
 	public Configuration getConfiguration() {
 		return new Configuration();
 	}
@@ -328,7 +344,7 @@ public class PPManager {
 
 		//region Call User Data
 		Call<User> call = webApi.getApi(getBaseUrl()).getUser(btoken);
-		call.enqueue(new Callback<User>() {
+		call.enqueue(new retrofit2.Callback<User>() {
 			@Override
 			public void onResponse(Call<User> call, Response<User> response) {
 				loading.dismiss();
@@ -381,7 +397,6 @@ public class PPManager {
 	}
 
 	public String getPicassoParms() {
-//		return "https://sandbox.iokids.net/user/v1/my/profile/picture";
 		return getBaseUrl() + "/user/v1/my/profile/picture";
 	}
 
