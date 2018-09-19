@@ -241,11 +241,12 @@ the playPORTAL SDK.
 ##### Configuration / Setup
 The following steps must be performed to enable push notifications:
 
-* Register your app with push notifications enabled at the Google Developer console. Download
-the FCM key and the google-services.json from the portal.
-
+* Create a new project at Firebase (https://console.firebase.google.com/) 
+* Recommended: Go through the tutorial steps for adding Firebase to Android app ("Get started by adding Firebase to your app")
+* Register your app with push notifications enabled via the Google Developer console. 
+* Download the FCM key (Project Settings -> Cloud Messaging -> Server key)
+* Download the google-services.json file from the portal.
 * Upload the FCM key into the playPORTAL studio portal under the app definition screen.
-
 * Add the google-services.json into your project's "app" directory (i.e. at the same level as 
 your app src directory).
 
