@@ -3,7 +3,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'io.playportal.studio.ppsdk_android'
-version = '0.0.12'
+version = '0.1.0'
 
 
 // Bintray
@@ -21,7 +21,7 @@ ext {
     siteUrl = 'https://github.com/playportal-studio/PPSDK-Android'
     gitUrl = 'https://github.com/playportal-studio/PPSDK-Android.git'
 
-    libraryVersion = '0.0.12'
+    libraryVersion = '0.1.0'
 
     developerId = 'g11baldwin' // Maven plugin uses this. I don't know if it needs to be anything special.
     developerName = 'Gary Baldwin'
