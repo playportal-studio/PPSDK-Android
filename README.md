@@ -241,6 +241,7 @@ the playPORTAL SDK.
 ##### Configuration / Setup
 The following steps must be performed to enable push notifications:
 
+
 * Create a new project at Firebase (https://console.firebase.google.com/) 
 * Recommended: Go through the tutorial steps for adding Firebase to Android app ("Get started by adding Firebase to your app")
 * Register your app with push notifications enabled via the Google Developer console. 
