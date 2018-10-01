@@ -18,12 +18,16 @@ import com.dynepic.ppsdk_android.utils._CallbackFunction;
 import com.dynepic.ppsdk_android.utils._DataService;
 import com.dynepic.ppsdk_android.utils._DevPrefs;
 import com.dynepic.ppsdk_android.utils._DialogFragments;
+import com.dynepic.ppsdk_android.utils._PicassoCache;
 import com.dynepic.ppsdk_android.utils._UserPrefs;
 import com.dynepic.ppsdk_android.utils._WebApi;
 
 import com.google.gson.JsonObject;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.OkHttp3Downloader;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
+import com.squareup.picasso.NetworkPolicy;
 
 import org.json.JSONObject;
 
@@ -197,35 +201,80 @@ public class PPManager {
 		return devPrefs.exists();
 	}
 
+	// Default callback
+    private com.squareup.picasso.Callback defaultCallback = new com.squareup.picasso.Callback() {
+        @Override
+        public void onSuccess() {
+            Log.d("Picasso ", "success");
+        }
 
-	public void loadImageByID(Context context, String imageId, ImageView intoImage) {
-		Picasso p = new Picasso.Builder(context).downloader(ppManager.imageDownloader()).build();
-		p.load(getBaseUrl() + "/image/v1/static/" + imageId).into(intoImage, new com.squareup.picasso.Callback() {
-			@Override
-			public void onSuccess() {
-				Log.d("Picasso ", "success");
-			}
+        @Override
+        public void onError(Exception e) {
+            Log.v("Picasso", "Could not fetch image");
+        }
+    };
 
-			@Override
-			public void onError(Exception e) {
-				Log.e("Picasso ", "error:" + e);
-			}
-		});
+	public void loadImageByIDNoCache(Context context, String imageId, ImageView intoImage) {
+		loadImageByIDNoCache(context, imageId, intoImage, defaultCallback);
 	}
 
-	public void loadImageByID(Context context, String imageId, ImageView intoImage, int width, int height) {
-		Picasso p = new Picasso.Builder(context).downloader(ppManager.imageDownloader()).build();
-		p.load(getBaseUrl() + "/image/v1/static/" + imageId).resize(width, height).into(intoImage, new com.squareup.picasso.Callback() {
-			@Override
-			public void onSuccess() {
-				Log.d("Picasso ", "success");
-			}
+	public void loadImageByIDNoCache(Context context, String imageId, ImageView intoImage, int width, int height) {
+		loadImageByIDNoCache(context, imageId, intoImage, width, height, defaultCallback);
+	}
 
-			@Override
-			public void onError(Exception e) {
-				Log.e("Picasso ", "error:" + e);
-			}
-		});
+	public void loadImageByIDNoCache(Context context, String imageId, ImageView intoImage, com.squareup.picasso.Callback callback) {
+		loadImageByIDNoCache(context, imageId, intoImage, 0, 0, callback);
+	}
+
+	public void loadImageByIDNoCache(Context context, String imageId, ImageView intoImage, int width, int height, com.squareup.picasso.Callback callback) {
+		RequestCreator rc = _PicassoCache.getPicassoInstance(context)
+				.load(PPManager.getInstance().getBaseUrl() + "/image/v1/static/" + imageId)
+				// Skips memory cache lookup when processing a request.
+				.memoryPolicy(MemoryPolicy.NO_CACHE)
+				// Skips checking the disk cache and forces loading through the network
+				.networkPolicy(NetworkPolicy.NO_CACHE);
+		// No size when size is below or equal zero
+		if (width > 0 && height > 0) {
+			rc = rc.resize(width, height);
+		}
+		rc.into(intoImage, callback);
+	}
+
+	public void loadImageByID(Context context, String imageId, ImageView intoImage) {
+		loadImageByID(context, imageId, intoImage, defaultCallback);
+	}
+
+	public void loadImageByID(Context context, String imageId, int width, int height, ImageView intoImage) {
+		loadImageByID(context, imageId, intoImage, width, height, defaultCallback);
+	}
+
+	public void loadImageByID(Context context, String imageId, ImageView intoImage, com.squareup.picasso.Callback callback) {
+		loadImageByID(context, imageId, intoImage, 0, 0, callback);
+	}
+
+	public void loadImageByID(Context context, String imageId, ImageView intoImage, int width, int height, com.squareup.picasso.Callback callback) {
+		RequestCreator rc = _PicassoCache.getPicassoInstance(context)
+				.load(PPManager.getInstance().getBaseUrl() + "/image/v1/static/" + imageId);
+		// No size when size is below or equal zero
+		if (width > 0 && height > 0) {
+			rc = rc.resize(width, height);
+		}
+		// Forces the request through the disk cache only, skipping network.
+		rc.networkPolicy(NetworkPolicy.OFFLINE)
+				// Skips storing the result into the disk cache.
+				.networkPolicy(NetworkPolicy.NO_STORE)
+				.into(intoImage, new com.squareup.picasso.Callback() {
+					@Override
+					public void onSuccess() {
+						callback.onSuccess();
+					}
+
+					@Override
+					public void onError(Exception e) {
+						//Try again online if cache failed
+						loadImageByIDNoCache(context, imageId, intoImage, callback);
+					}
+				});
 	}
 
 	public Configuration getConfiguration() {
