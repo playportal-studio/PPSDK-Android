@@ -66,7 +66,7 @@ public class _DevPrefs {
     }
 
     public String getBaseUrl() {
-        return _sharedPrefs.getString(ENVIRONMENT, "https://sandbox.iokids.net");
+        return _sharedPrefs.getString(ENVIRONMENT, "https://sandbox.playportal.io");
     }
     public void setBaseUrl(String value) {
         _prefsEditor.putString(ENVIRONMENT, value);

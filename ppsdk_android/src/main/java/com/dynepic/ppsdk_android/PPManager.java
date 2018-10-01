@@ -172,7 +172,6 @@ public class PPManager {
 		} else if (env == "DEV") {
 			devPrefs.setBaseUrl("https://develop-api.goplayportal.com");
 		} else {
-//			devPrefs.setBaseUrl("https://sandbox.iokids.net");
 			devPrefs.setBaseUrl("https://sandbox.playportal.io");
 		}
 		Log.d(TAG,"using baseUrl:" + devPrefs.getBaseUrl());
