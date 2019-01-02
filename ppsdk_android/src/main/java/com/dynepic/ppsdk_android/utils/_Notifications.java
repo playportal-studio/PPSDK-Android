@@ -1,31 +1,22 @@
-package ppsdk_android.utils;
+package com.dynepic.ppsdk_android.utils;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.dynepic.ppsdk_android.R;
-import com.dynepic.ppsdk_android.models.Bucket;
-import com.dynepic.ppsdk_android.utils._CallbackFunction;
-import com.dynepic.ppsdk_android.utils._WebApi;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.messaging.FirebaseMessagingService;
-//import com.google.firebase.messaging.RemoteMessage;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
+import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.google.gson.JsonObject;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import com.dynepic.ppsdk_android.utils._DevPrefs;
+//import com.google.firebase.messaging.RemoteMessage;
 
 public class _Notifications extends FirebaseMessagingService {
 
@@ -127,7 +118,7 @@ public class _Notifications extends FirebaseMessagingService {
 
 	// Register device token with the server
 	private void registerToken(String token, _CallbackFunction._GenericWithError cb) {
-		Log.d(TAG, "registerToken" + "token: " + token);
+		Log.d(TAG, "registerToken" + " token: " + token);
 		if (token != null) {
 			String btoken = "Bearer " + devPrefs.getClientAccessToken();
 			JsonObject body = new JsonObject();

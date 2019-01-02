@@ -1,5 +1,4 @@
 package com.dynepic.ppsdk_android.models;
-//package com.dynepic.ppsdk.auth;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;

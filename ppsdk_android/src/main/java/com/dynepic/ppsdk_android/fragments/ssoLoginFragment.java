@@ -1,4 +1,4 @@
-package ppsdk_android.fragments;
+package com.dynepic.ppsdk_android.fragments;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -21,17 +21,12 @@ import android.webkit.WebViewClient;
 
 import com.dynepic.ppsdk_android.PPManager;
 import com.dynepic.ppsdk_android.R;
-import com.dynepic.ppsdk_android.models.User;
 import com.dynepic.ppsdk_android.utils._DevPrefs;
 import com.dynepic.ppsdk_android.utils._DialogFragments;
 
 import java.lang.reflect.Method;
 import java.time.ZonedDateTime;
 import java.util.Objects;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 
 public class ssoLoginFragment extends DialogFragment {
@@ -116,8 +111,8 @@ public class ssoLoginFragment extends DialogFragment {
         String mid = "&redirect_uri=";
         String uri = devPrefs.getClientRedirect();
         String post = "&state=beans&response_type=implicit";
-
         String url = pre + cid + mid + uri + post;
+        Log.d("ssoLoginFragment: ", url);
         webView.loadUrl(url);
     }
 

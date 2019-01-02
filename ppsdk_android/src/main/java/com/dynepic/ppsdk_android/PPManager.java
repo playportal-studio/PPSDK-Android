@@ -3,44 +3,37 @@ package com.dynepic.ppsdk_android;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.ImageView;
 
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import ppsdk_android.fragments.ssoLoginFragment;
-import ppsdk_android.fragments.loadingFragment;
+import com.google.gson.JsonObject;
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.OkHttp3Downloader;
+import com.squareup.picasso.RequestCreator;
+
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
+import com.dynepic.ppsdk_android.fragments.loadingFragment;
+import com.dynepic.ppsdk_android.fragments.ssoLoginFragment;
 import com.dynepic.ppsdk_android.models.User;
 import com.dynepic.ppsdk_android.models.UserHandler;
 import com.dynepic.ppsdk_android.utils._CallbackFunction;
 import com.dynepic.ppsdk_android.utils._DataService;
 import com.dynepic.ppsdk_android.utils._DevPrefs;
 import com.dynepic.ppsdk_android.utils._DialogFragments;
+import com.dynepic.ppsdk_android.utils._LeaderboardService;
+import com.dynepic.ppsdk_android.utils._Notifications;
 import com.dynepic.ppsdk_android.utils._PicassoCache;
 import com.dynepic.ppsdk_android.utils._UserPrefs;
 import com.dynepic.ppsdk_android.utils._WebApi;
-
-import com.google.gson.JsonObject;
-import com.squareup.picasso.MemoryPolicy;
-import com.squareup.picasso.OkHttp3Downloader;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.RequestCreator;
-import com.squareup.picasso.NetworkPolicy;
-
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import ppsdk_android.utils._Notifications;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static java.lang.Thread.sleep;
+import static java.util.Objects.isNull;
 
 /**
  * This class should handle most of the activity within the app.
@@ -134,7 +127,12 @@ public class PPManager {
 
 
 	public void enablePushNotifications() {
-      	notifications = new _Notifications(webApi, context, (Boolean state, String error) -> {
+		if(isNull(webApi)) {
+			webApi = new _WebApi(devPrefs, this::authListener, (status) -> {
+				Log.d(TAG, "_WebApi init'd status:" + status.toString());
+			});
+		}
+			notifications = new _Notifications(webApi, context, (Boolean state, String error) -> {
       		Log.d(TAG, "enablePushNotification init state:" + state + " error: " + error);
 		});
 	}
@@ -172,14 +170,16 @@ public class PPManager {
 		} else if (env == "DEV") {
 			devPrefs.setBaseUrl("https://develop-api.goplayportal.com");
 		} else {
+//			devPrefs.setBaseUrl("https://sandbox.iokids.net");
 			devPrefs.setBaseUrl("https://sandbox.playportal.io");
 		}
 		Log.d(TAG,"using baseUrl:" + devPrefs.getBaseUrl());
-
-		webApi  = new _WebApi(devPrefs, this::authListener, (status) -> {
-			Log.d(TAG,"_WebApi init'd status:" + status.toString());
-			cb.f(status);
-		});
+		if(isNull(webApi)) {
+			webApi = new _WebApi(devPrefs, this::authListener, (status) -> {
+				Log.d(TAG, "_WebApi init'd status:" + status.toString());
+				cb.f(status);
+			});
+		}
 	}
 
 	public String getBaseUrl() {
@@ -407,7 +407,7 @@ public class PPManager {
 
 		//region Call User Data
 		Call<User> call = webApi.getApi(getBaseUrl()).getUser(btoken);
-		call.enqueue(new retrofit2.Callback<User>() {
+		call.enqueue(new Callback<User>() {
 			@Override
 			public void onResponse(Call<User> call, Response<User> response) {
 				loading.dismiss();
@@ -571,6 +571,37 @@ public class PPManager {
 			appDataService.createBucket(bucketname, bucketUsers, isPublic, CONTEXT, cb);
 		}
 	}
+
+
+
+
+	// -----------------------------------------------------------------------------
+	// Leaderboard API
+	// -----------------------------------------------------------------------------
+	private static _LeaderboardService appLeaderboardService;
+	public LeaderboardService leaderboard() {
+		return new LeaderboardService(webApi);
+	}
+
+	public class LeaderboardService {
+		LeaderboardService(_WebApi webApi1) {
+			if (appLeaderboardService == null) {
+				appLeaderboardService = new _LeaderboardService(webApi);
+			}
+		}
+
+		public void get(Integer page, Integer limit, String categories, Context CONTEXT, _CallbackFunction._Leaderboard cb) {
+			appLeaderboardService.get(page, limit, categories, CONTEXT, cb);
+		}
+
+
+		public void update(Integer score, ArrayList<String> categories, Context CONTEXT, _CallbackFunction._Leaderboard cb) {
+			appLeaderboardService.update(score, categories, CONTEXT, cb);
+		}
+	}
+
+
+
 
 
 

@@ -4,10 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-
-import com.dynepic.ppsdk_android.utils._DevPrefs;
 
 public class _Tests {
 

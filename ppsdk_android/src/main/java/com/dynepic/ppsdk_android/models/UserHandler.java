@@ -6,7 +6,7 @@ import com.dynepic.ppsdk_android.utils._UserPrefs;
 
 public class UserHandler {
 
-	private static com.dynepic.ppsdk_android.models.User userObject;
+	private static User userObject;
 	private _UserPrefs userPrefs;
 	private Context CONTEXT;
 
@@ -15,7 +15,7 @@ public class UserHandler {
 		setUserPrefs(CONTEXT);
 	}
 
-	public void populateUserData(com.dynepic.ppsdk_android.models.User userObject) {
+	public void populateUserData(User userObject) {
 		setUserPrefs(CONTEXT);
 		setHandle(userObject.getHandle());
 		setFirstName(userObject.getFirstName());

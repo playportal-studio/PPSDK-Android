@@ -34,7 +34,7 @@ public class _DialogFragments extends DialogFragment {
     //Shows a new dialog fragment, clears any previous, has a title if it's not specified in the fragment.
     public static void showDialogFragment(Activity ACTIVITY_CONTEXT, DialogFragment dialogFragment, Boolean cancelable, String TITLE){
         FragmentTransaction transaction = ACTIVITY_CONTEXT.getFragmentManager().beginTransaction();
-        com.dynepic.ppsdk_android.utils._Fragments.clearPreviousFragments(ACTIVITY_CONTEXT);
+        _Fragments.clearPreviousFragments(ACTIVITY_CONTEXT);
         dialogFragment.setCancelable(cancelable);
         dialogFragment.show(transaction, TITLE);
     }

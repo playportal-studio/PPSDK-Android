@@ -5,19 +5,14 @@ import android.util.Log;
 
 import com.google.gson.JsonObject;
 
-
-import java.lang.reflect.GenericDeclaration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.dynepic.ppsdk_android.models.Bucket;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-import com.dynepic.ppsdk_android.models.Bucket;
-import com.dynepic.ppsdk_android.utils._CallbackFunction;
-import com.dynepic.ppsdk_android.utils._WebApi;
 
 
 public class _DataService {
@@ -31,7 +26,7 @@ public class _DataService {
 
 	public void createBucket(String bucketName, ArrayList<String> bucketUsers, Boolean isPublic, Context CONTEXT, _CallbackFunction._Data cb) {
 
-		com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
+		_DevPrefs devPrefs = new _DevPrefs(CONTEXT);
 
 		if(bucketName != null) {
 			String btoken = "Bearer " + devPrefs.getClientAccessToken();
@@ -64,7 +59,7 @@ public class _DataService {
 	{
 		Log.d(TAG,"readBucket: " + bucketName + " and key:" + key);
 		Boolean readSuccess = true;
-		com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
+		_DevPrefs devPrefs = new _DevPrefs(CONTEXT);
 
 		if(bucketName != null) {
 			String btoken = "Bearer " + devPrefs.getClientAccessToken();
@@ -105,7 +100,7 @@ public class _DataService {
 	public void write(String bucketName, String key, Boolean value, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
 		Log.d(TAG,"writeBucket" + "bucket: " + bucketName + " key:" + key + " value:" + value);
 		if (bucketName != null && key != null) {
-			com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
+			_DevPrefs devPrefs = new _DevPrefs(CONTEXT);
 			String btoken = "Bearer " + devPrefs.getClientAccessToken();
 			JsonObject body = new JsonObject();
 			body.addProperty("key", key);
@@ -120,7 +115,7 @@ public class _DataService {
 	public void write(String bucketName, String key, String value, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
 		Log.d(TAG,"writeBucket" + "bucket: " + bucketName + " key:" + key + " value:" + value);
 		if (bucketName != null && key != null) {
-			com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
+			_DevPrefs devPrefs = new _DevPrefs(CONTEXT);
 			String btoken = "Bearer " + devPrefs.getClientAccessToken();
 			JsonObject body = new JsonObject();
 			body.addProperty("key", key);
@@ -135,7 +130,7 @@ public class _DataService {
 	public void write(String bucketName, String key, Integer value, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
 		Log.d(TAG,"writeBucket" + "bucket: " + bucketName + " key:" + key + " value:" + value);
 		if (bucketName != null && key != null) {
-			com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
+			_DevPrefs devPrefs = new _DevPrefs(CONTEXT);
 			String btoken = "Bearer " + devPrefs.getClientAccessToken();
 			JsonObject body = new JsonObject();
 			body.addProperty("key", key);
@@ -151,7 +146,7 @@ public class _DataService {
 	public void write(String bucketName, String key, JsonObject value, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
 		Log.d(TAG,"writeBucket" + "bucket: " + bucketName + " key:" + key + " value:" + value);
 		if (bucketName != null && key != null && value != null) {
-			com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
+			_DevPrefs devPrefs = new _DevPrefs(CONTEXT);
 			String btoken = "Bearer " + devPrefs.getClientAccessToken();
 			JsonObject body = new JsonObject();
 			body.addProperty("key", key);
@@ -165,7 +160,7 @@ public class _DataService {
 	}
 
 	public void writef(String bucketName, JsonObject body, Boolean push, Context CONTEXT, _CallbackFunction._Data cb) {
-		com.dynepic.ppsdk_android.utils._DevPrefs devPrefs = new com.dynepic.ppsdk_android.utils._DevPrefs(CONTEXT);
+		_DevPrefs devPrefs = new _DevPrefs(CONTEXT);
 		String btoken = "Bearer " + devPrefs.getClientAccessToken();
 		Call<JsonObject> call = webApi.getApi(devPrefs.getBaseUrl()).writeData(body, btoken);
 		Log.d(TAG,"write body: " + body.toString());

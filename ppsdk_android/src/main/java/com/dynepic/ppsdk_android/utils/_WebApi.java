@@ -1,17 +1,7 @@
 package com.dynepic.ppsdk_android.utils;
 
-import android.content.Context;
 import android.media.Image;
-import android.support.annotation.Nullable;
 import android.util.Log;
-
-import com.dynepic.ppsdk_android.PPManager;
-import com.dynepic.ppsdk_android.models.Bucket;
-import com.dynepic.ppsdk_android.models.Tokens;
-import com.dynepic.ppsdk_android.models.User;
-import com.dynepic.ppsdk_android.utils._DevPrefs;
-import com.dynepic.ppsdk_android.utils._CallbackFunction;
-import com.dynepic.ppsdk_android.utils._Utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -28,6 +18,11 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.logging.HttpLoggingInterceptor;
+import com.dynepic.ppsdk_android.PPManager;
+import com.dynepic.ppsdk_android.models.Bucket;
+import com.dynepic.ppsdk_android.models.Leaderboard;
+import com.dynepic.ppsdk_android.models.Tokens;
+import com.dynepic.ppsdk_android.models.User;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -41,8 +36,6 @@ import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
-
-import static java.lang.Thread.sleep;
 
 //import okhttp3.Response;
 
@@ -75,7 +68,7 @@ public class _WebApi {
 
 	class PPCustomInterceptor implements Interceptor {
 		@Override
-		public okhttp3.Response intercept(Interceptor.Chain chain) throws IOException {
+		public okhttp3.Response intercept(Chain chain) throws IOException {
 			Request request = chain.request();
 			okhttp3.Response response = chain.proceed(request);
 
@@ -84,9 +77,9 @@ public class _WebApi {
 			} else {
 				if(response.code() == 401) {
 					refreshAccessToken((Boolean status) -> {
-//						Log.d("Interceptor finished refreshing token", "cloning request");
-//						Log.d("Interceptor retry request: ", request.toString());
-						chain.call().clone(); // retry
+						Log.d("Interceptor finished refreshing token", "cloning request");
+						Log.d("Interceptor retry request: ", request.toString());
+						okhttp3.Call clonedCall = chain.call().clone(); // retry
 					});
 				}
 				return response;
@@ -163,13 +156,20 @@ public class _WebApi {
 
 		@PUT("/notifications/v1")
 		Call<JsonObject> send(@Body JsonObject bodyparms, @Header("Authorization") String authorization);
+
+		@GET("/leaderboard/v1")
+		Call<Leaderboard> getLeaderboard(@QueryMap Map<String, String> queryparms, @Header("Authorization") String authorization);
+
+		@POST("/leaderboard/v1")
+		Call<Leaderboard> updateLeaderboard(@Body JsonObject bodyparms, @Header("Authorization") String authorization);
+
 	}
 
 
 	private class BasicAuthInterceptor implements Interceptor {
 
 		@Override
-		public okhttp3.Response intercept(Interceptor.Chain chain) throws IOException {
+		public okhttp3.Response intercept(Chain chain) throws IOException {
 			final PPManager ppsdk = PPManager.getInstance();
 			final Request original = chain.request();
 			final Request.Builder requestBuilder = original.newBuilder()

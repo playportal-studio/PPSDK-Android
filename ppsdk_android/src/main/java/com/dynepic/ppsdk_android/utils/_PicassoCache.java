@@ -2,8 +2,9 @@ package com.dynepic.ppsdk_android.utils;
 
 import android.content.Context;
 
-import com.dynepic.ppsdk_android.PPManager;
 import com.squareup.picasso.Picasso;
+
+import com.dynepic.ppsdk_android.PPManager;
 
 public class _PicassoCache {
 

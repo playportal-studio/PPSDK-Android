@@ -6,9 +6,6 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import java.time.ZonedDateTime;
-import java.util.Date;
-
-import com.dynepic.ppsdk_android.utils._Utils;
 
 public class _DevPrefs {
 
@@ -66,7 +63,7 @@ public class _DevPrefs {
     }
 
     public String getBaseUrl() {
-        return _sharedPrefs.getString(ENVIRONMENT, "https://sandbox.playportal.io");
+        return _sharedPrefs.getString(ENVIRONMENT, "https://sandbox.iokids.net");
     }
     public void setBaseUrl(String value) {
         _prefsEditor.putString(ENVIRONMENT, value);
