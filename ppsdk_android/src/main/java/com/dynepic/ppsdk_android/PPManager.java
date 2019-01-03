@@ -6,7 +6,10 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.ImageView;
 
+import com.dynepic.ppsdk_android.models.Leaderboard;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.OkHttp3Downloader;
@@ -14,7 +17,11 @@ import com.squareup.picasso.RequestCreator;
 
 import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.dynepic.ppsdk_android.fragments.loadingFragment;
 import com.dynepic.ppsdk_android.fragments.ssoLoginFragment;
@@ -480,8 +487,11 @@ public class PPManager {
 	public class FriendsService {
 		ArrayList<User> friendsList;
 
+		ArrayList<User> searchResultsList;
+
 		FriendsService() {
 		}
+
 
 		public ArrayList<User> get(_CallbackFunction._Friends cb) {
 			Call<ArrayList<User>> friendsCall = webApi.getApi(getBaseUrl()).getFriends(devPrefs.getClientAccessToken());
@@ -506,6 +516,59 @@ public class PPManager {
 			});
 			return friendsList;
 		}
+
+
+
+//
+//     searchUsers - returns publicly searchable users or friends/family that are users of the app that you’re searching from
+//			GET /user/v1/search?term=<handle, name, (2 char min)>&page=1&limit=10
+//			response: {
+//				total: Number,
+//						page: Number,
+//						docs: [{User}]
+//          }
+
+		public ArrayList<User> searchUsers(String searchTerm, Integer page, Integer limit, _CallbackFunction._Friends cb) {
+			String btoken = "Bearer " + devPrefs.getClientAccessToken();
+			Map<String, String> queryparms = new HashMap<>();
+			queryparms.put("term", searchTerm);
+			queryparms.put("page", String.valueOf(page));
+			queryparms.put("limit", String.valueOf(limit));
+
+			Call<JsonObject> searchUsersCall = webApi.getApi(getBaseUrl()).searchUsers(queryparms, btoken);
+			searchUsersCall.enqueue(new Callback<JsonObject>() {
+
+
+				@Override
+				public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+					if (response.code() == 200) {
+						System.out.println(response.body());
+
+						try {
+							Gson gson = new Gson();
+							Type type = new TypeToken<List<User>>(){}.getType();
+							searchResultsList = gson.fromJson(response.body().getAsJsonArray("docs"), type);
+
+//						searchResultsList = response.body().getJSONArray("docs");
+						} catch (Exception e) {
+							Log.e(TAG, " error searching for users: " + e.getMessage());
+						}
+						cb.f(searchResultsList, null);
+					} else {
+						Log.e(TAG," searchUsers - " + "Error searching users for search term: "+ searchTerm + " and page: " + page.toString() + " and pageSize: " + limit.toString() );
+						Log.e(TAG," searchUsers - " + "Response code is : " + response.code());
+						Log.e(TAG," searchUsers - " + "Response message is : " + response.message());
+					}
+				}
+
+				@Override
+				public void onFailure(Call<JsonObject> call, Throwable t) {
+					Log.e(TAG,"searchUsers" + "Request failed with throwable: " + t);
+				}
+			});
+			return searchResultsList;
+		}
+
 	}
 
 

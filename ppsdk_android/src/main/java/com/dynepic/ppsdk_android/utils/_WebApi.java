@@ -137,6 +137,9 @@ public class _WebApi {
 		@GET("user/v1/my/friends")
 		Call<ArrayList<User>> getFriends(@Header("Authorization") String authorization);
 
+		@GET("/user/v1/search")
+		Call<JsonObject> searchUsers(@QueryMap Map<String, String> queryparms, @Header("Authorization") String authorization);
+
 
 		// Data / Buckets API calls
 		@PUT("/app/v1/bucket")
