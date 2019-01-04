@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ----
+### 0.1.0 - 2018-09-28
+##### Changed
+- Fixed issue with Picasso image download use (converted to singleton)
+##### Added
+- Added methods to support image download and not store those to Android disk although they're still cached
+- Converted existing retrieval of profile images to use these image download methods
+
 ### 0.0.12 - 2018-08-28
 ##### Changed
 - Fixed issue with image load failing on auth fail
