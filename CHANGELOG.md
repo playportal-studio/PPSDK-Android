@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ----
+### 0.1.1 - 2019-01-04
+##### Changed
+##### Added
+- Added support for leaderboards.
+- Added "search for users" capability.
+
 ### 0.1.0 - 2018-09-28
 ##### Changed
 - Fixed issue with Picasso image download use (converted to singleton)
