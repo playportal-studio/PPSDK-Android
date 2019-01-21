@@ -298,7 +298,7 @@ In order to send a notification to another user:
 	   receiverId - id of user to target with the push (id can be gotten from friends list as friend.getUserId())
 	   cb - fnx to receive status of push notification, with invocation (Boolean status, String error) -> {}
  
- 
+ ```
  
 ### Leaderboards
 Leaderboards provide a convenient way for tracking competitive results for users within an app. Multiple leaderboards can be utilized simultaneously for various tracking activities. Leaderboards contain:
@@ -312,7 +312,9 @@ Leaderboards provide a convenient way for tracking competitive results for users
 		public void get(Integer page, Integer limit, String categories, Context CONTEXT, _CallbackFunction._Leaderboard cb) {
 			appLeaderboardService.get(page, limit, categories, CONTEXT, cb);
 		}
+		
 ```
+
 
 #### Update
 
