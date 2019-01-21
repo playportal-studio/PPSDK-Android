@@ -169,6 +169,23 @@ The logged in user's profile image is available and can be easily captured into 
 
 ```
 
+#### Search Profiles:
+ Profiles (of searchable users) can be retrieved from the playPORTAL service.
+
+```aidl
+    String searchString = "someString";
+    Int startIndex = 1;
+    Int maxReturnedMatches = 20;
+	
+    ppManager.friends().searchUsers(searchString, startIndex, maxReturnedMatches, (ArrayList<User> userList, String e) -> {
+	if (userList != null && e == null) {
+		for (User f : userList) {
+			System.out.println("searched user: " + f.getHandle() + " - " + f.getFirstName() + " " + f.getLastName());		
+		}
+	});
+
+```
+
 
 ### Data
 Two data stores are auto-created (or opened) for each user. They are:
