@@ -11,6 +11,9 @@
 app/src/androidTest
 app/src/test
 
+# don't store jfrog/bintray upload script (contains keys)
+bintrayUpload
+
 
 # Generated files
 bin/
